@@ -1,16 +1,85 @@
 import { useState, useCallback } from "react";
 
 const RANKS = [
-  { label: "Primera recomendación", bg: "#FAC775", color: "#412402" },
-  { label: "Segunda recomendación", bg: "#D3D1C7", color: "#2C2C2A" },
-  { label: "Tercera recomendación", bg: "#F0997B", color: "#4A1B0C" },
+  { label_es: "Primera recomendación", label_en: "First recommendation", bg: "#FAC775", color: "#412402" },
+  { label_es: "Segunda recomendación", label_en: "Second recommendation", bg: "#D3D1C7", color: "#2C2C2A" },
+  { label_es: "Tercera recomendación", label_en: "Third recommendation", bg: "#F0997B", color: "#4A1B0C" },
 ];
+
+const T = {
+  es: {
+    logo: "La Carta Personalizada",
+    logoSub: "Tu menú a medida",
+    step1: "Preferencias", step2: "Las cartas", step3: "Mis platos",
+    title1: "¿Qué comes y qué no comes?",
+    hint1: "Escribe en lenguaje natural tus restricciones, alergias, preferencias o lo que no te gusta.",
+    placeholder1: "Ej: Soy vegetariana, no como gluten ni lactosa. Me encantan los sabores picantes. No soporto el cilantro...",
+    continue: "Continuar →",
+    errPrefs: "Por favor describe tus preferencias.",
+    title2: "Agrega las cartas",
+    hint2: "Sube hasta 5 imágenes o PDFs, y/o agrega hasta 5 links de cartas online.",
+    uploadLabel: "Imágenes o PDFs",
+    uploadText: "Arrastra imágenes o PDFs aquí",
+    uploadSub: "o haz clic para seleccionar (máx. 5)",
+    linksLabel: "Links de cartas online",
+    linkPlaceholder: "https://restaurante.com/carta",
+    addLink: "+ Agregar otro link",
+    errNoMenu: "Por favor sube al menos una carta o agrega un link.",
+    analyze: "Ver mis platos recomendados",
+    analyzingSub: "Analizando con inteligencia artificial",
+    analyzing: "Analizando carta",
+    of: "de",
+    results: "Tus 3 platos ideales",
+    restart: "← Empezar de nuevo",
+    notMenu: "Este archivo no parece ser una carta de restaurante. Por favor sube una foto o PDF de un menú.",
+    accessError: "No se pudo acceder a este link. Prueba subiendo una foto o PDF.",
+    fileError: "No se pudo analizar este archivo. Asegúrate que la imagen sea clara y el texto legible.",
+    warnGoogle: "Este es un link de búsqueda de Google. Busca el link directo al menú del restaurante.",
+    warnIG: "Instagram bloquea el acceso automático. Sube una foto de la carta en su lugar.",
+    warnFB: "Facebook bloquea el acceso automático. Sube una foto de la carta en su lugar.",
+    warnTT: "TikTok no tiene cartas. Usa el link directo al menú del restaurante.",
+    warnX: "X/Twitter bloquea el acceso automático. Usa el link directo al menú.",
+  },
+  en: {
+    logo: "The Personalized Menu",
+    logoSub: "Your menu, your way",
+    step1: "Preferences", step2: "The menus", step3: "My dishes",
+    title1: "What do you eat and what don't you eat?",
+    hint1: "Write in natural language your restrictions, allergies, preferences or what you dislike.",
+    placeholder1: "E.g.: I'm vegetarian, no gluten or lactose. I love spicy food. Can't stand cilantro...",
+    continue: "Continue →",
+    errPrefs: "Please describe your preferences.",
+    title2: "Add the menus",
+    hint2: "Upload up to 5 images or PDFs, and/or add up to 5 links to online menus.",
+    uploadLabel: "Images or PDFs",
+    uploadText: "Drag images or PDFs here",
+    uploadSub: "or click to select (max. 5)",
+    linksLabel: "Online menu links",
+    linkPlaceholder: "https://restaurant.com/menu",
+    addLink: "+ Add another link",
+    errNoMenu: "Please upload at least one menu or add a link.",
+    analyze: "See my recommended dishes",
+    analyzingSub: "Analyzing with artificial intelligence",
+    analyzing: "Analyzing menu",
+    of: "of",
+    results: "Your 3 ideal dishes",
+    restart: "← Start over",
+    notMenu: "This file doesn't appear to be a restaurant menu. Please upload a photo or PDF of a menu.",
+    accessError: "Could not access this link. Try uploading a photo or PDF instead.",
+    fileError: "Could not analyze this file. Make sure the image is clear and the text is legible.",
+    warnGoogle: "This is a Google search link. Find the direct link to the restaurant's menu.",
+    warnIG: "Instagram blocks automatic access. Upload a photo of the menu instead.",
+    warnFB: "Facebook blocks automatic access. Upload a photo of the menu instead.",
+    warnTT: "TikTok doesn't have menus. Use the direct link to the restaurant's menu.",
+    warnX: "X/Twitter blocks automatic access. Use the direct link to the menu.",
+  }
+};
 
 function fileToBase64(file) {
   return new Promise((res, rej) => {
     const r = new FileReader();
     r.onload = () => res(r.result.split(",")[1]);
-    r.onerror = () => rej(new Error("No se pudo leer el archivo."));
+    r.onerror = () => rej(new Error("Could not read file."));
     r.readAsDataURL(file);
   });
 }
@@ -26,29 +95,29 @@ function cleanUrl(url) {
   return url;
 }
 
-function getUrlWarning(url) {
+function getUrlWarning(url, t) {
   if (!url.trim()) return null;
-  if (url.includes("google.com/search")) return "Este es un link de búsqueda de Google. Busca el link directo al menú del restaurante.";
-  if (url.includes("instagram.com")) return "Instagram bloquea el acceso automático. Sube una foto de la carta en su lugar.";
-  if (url.includes("facebook.com")) return "Facebook bloquea el acceso automático. Sube una foto de la carta en su lugar.";
-  if (url.includes("tiktok.com")) return "TikTok no tiene cartas. Usa el link directo al menú del restaurante.";
-  if (url.includes("twitter.com") || url.includes("x.com")) return "X/Twitter bloquea el acceso automático. Usa el link directo al menú.";
+  if (url.includes("google.com/search")) return t.warnGoogle;
+  if (url.includes("instagram.com")) return t.warnIG;
+  if (url.includes("facebook.com")) return t.warnFB;
+  if (url.includes("tiktok.com")) return t.warnTT;
+  if (url.includes("twitter.com") || url.includes("x.com")) return t.warnX;
   return null;
 }
 
-function buildPrompt(prefs) {
-  return `Eres un dietista clínico y chef experto con conocimiento profundo de alergias, intolerancias y bioquímica nutricional. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nAl analizar cada restricción, considera TODOS los ingredientes ocultos y derivados. Por ejemplo:\n- "Sin gluten" implica evitar: trigo, cebada, centeno, avena, malta, almidón modificado, salsa de soya tradicional, espesantes derivados de trigo\n- "Sin lactosa/leche de vaca" implica evitar: mantequilla, crema, queso, yogur, caseína, suero de leche, whey\n- "Sin soya" implica evitar: tofu, edamame, miso, salsa de soya, lecitina de soya\n- "Sin cerdo" implica evitar: jamón, tocino, chorizo, morcilla, panceta, lardo, gelatina de cerdo\n- "Sin nitratos/nitritos" implica evitar: embutidos, carnes curadas, jamón, salchicha, hot dog, bacon, carnes procesadas\n- "Alimentos altos en histamina" a evitar: atún, sardinas, anchoas, caballa, mariscos, quesos curados, vino, cerveza, vinagre, tomate, espinaca, berenjena, aguacate, fresas, cítricos, chocolate, embutidos, fermentados, leftovers\n- "Bloqueadores de DAO" a evitar: alcohol, bebidas energéticas, té negro, té verde, mate\n\nAnaliza la carta adjunta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Analiza CADA ingrediente de cada plato, incluyendo salsas, aderezos, marinadas y guarniciones.\n2. Si HAY DUDA sobre algún ingrediente oculto, descarta el plato.\n3. Solo recomienda platos donde estés SEGURO que todos los ingredientes son seguros.\n4. No sugieras modificaciones ni sustituciones — si el plato no es apto tal como está, descártalo.\n5. Ordena del más seguro al menos seguro.\n6. En "por_que" explica específicamente por qué cada ingrediente principal es compatible con las restricciones. Sé concreto, no genérico.\n7. En "advertencia" incluye cualquier ingrediente que podría ser problemático aunque el plato sea recomendable (campo opcional).\n8. En "restaurante" pon el nombre del restaurante tal como aparece en la carta.\n9. En "etiquetas" incluye máximo 3 tags cortos.\n10. En "precio" copia el precio EXACTAMENTE como aparece en la carta. Si no hay precio, omite el campo.\n11. Si no hay 3 platos completamente seguros, incluye menos — es mejor recomendar 1 plato seguro que 3 dudosos.
-12. NUNCA recomiendes categorías, secciones o grupos de platos. Solo platos individuales con nombre específico en la carta.
-13. NUNCA asumas ingredientes ni hagas inferencias sobre lo que "típicamente" contiene un plato. Solo analiza lo que está explícitamente en la carta.
-14. Si un plato no tiene suficiente información de ingredientes en la carta para analizarlo con seguridad, descártalo.
-15. En "nombre" pon EXACTAMENTE el nombre del plato como aparece en la carta, nada más.\n\nTu respuesta debe ser ÚNICAMENTE el JSON, sin ninguna palabra antes ni después, sin explicaciones, sin backticks. Empieza directamente con { y termina con }.\nFormato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
+function buildPrompt(prefs, lang) {
+  const langNote = lang === "en" ? "Respond with dish names and explanations in English." : "Responde con nombres de platos y explicaciones en español.";
+  return `You are a clinical dietitian and expert chef with deep knowledge of allergies, intolerances, and nutritional biochemistry. The user has these dietary preferences and restrictions:\n\n"${prefs}"\n\nWhen analyzing each restriction, consider ALL hidden ingredients and derivatives. For example:\n- "No gluten" means avoiding: wheat, barley, rye, oats, malt, modified starch, traditional soy sauce, wheat-derived thickeners\n- "No lactose/cow's milk" means avoiding: butter, cream, cheese, yogurt, casein, whey\n- "No soy" means avoiding: tofu, edamame, miso, soy sauce, soy lecithin\n- "No pork" means avoiding: ham, bacon, chorizo, blood sausage, pancetta, lard, pork gelatin\n- "No nitrates/nitrites" means avoiding: cold cuts, cured meats, ham, sausage, hot dog, bacon, processed meats\n- "High histamine foods" to avoid: tuna, sardines, anchovies, mackerel, shellfish, aged cheeses, wine, beer, vinegar, tomato, spinach, eggplant, avocado, strawberries, citrus, chocolate, cold cuts, fermented foods, leftovers\n- "DAO blockers" to avoid: alcohol, energy drinks, black tea, green tea, mate\n\nAnalyze the attached menu and recommend exactly the 3 best dishes for this person.\n\nSTRICT RULES:\n1. Analyze EVERY ingredient of each dish, including sauces, dressings, marinades and sides.\n2. If there is ANY DOUBT about a hidden ingredient, discard the dish.\n3. Only recommend dishes where you are CERTAIN all ingredients are safe.\n4. Do NOT suggest modifications or substitutions — if the dish is not suitable as-is, discard it.\n5. Order from safest to least safe.\n6. In "por_que" explain specifically why each main ingredient is compatible with the restrictions. Be specific, not generic.\n7. In "advertencia" include any ingredient that could be problematic even if the dish is recommended (optional field).\n8. In "restaurante" put the restaurant name exactly as it appears on the menu.\n9. In "etiquetas" include maximum 3 short tags.\n10. In "precio" copy the price EXACTLY as it appears on the menu. If no price, omit the field.\n11. If there are not 3 completely safe dishes, include fewer — it is better to recommend 1 safe dish than 3 doubtful ones.\n12. NEVER recommend categories, sections or groups of dishes. Only individual dishes with a specific name on the menu.\n13. NEVER assume ingredients or make inferences about what a dish "typically" contains. Only analyze what is explicitly stated on the menu.\n14. If a dish does not have enough ingredient information on the menu to analyze it safely, discard it.\n15. In "nombre" put EXACTLY the dish name as it appears on the menu, nothing else.\n16. If the image or document is NOT a restaurant menu (e.g. it's a photo of something else, a random document, a logo, etc.), return: {"not_menu": true, "restaurante": ""}\n\n${langNote}\n\nYour response must be ONLY the JSON, with no words before or after, no explanations, no backticks. Start directly with { and end with }.\nExact format:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
 }
 
-function buildUrlPrompt(prefs, url) {
-  return `Eres un sommelier y chef experto. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nEl menú del restaurante está en este link: ${url}\n\nAnaliza la carta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Solo recomienda platos que YA cumplan con todas las restricciones TAL COMO ESTÁN en la carta. Sin modificaciones ni sustituciones.\n2. Si un plato necesita adaptación, descártalo.\n3. Ordena del más compatible al menos compatible.\n4. En "por_que" explica en 1-2 frases por qué el plato ya es compatible. Nunca menciones sustituciones.\n5. En "restaurante" pon el nombre del restaurante TAL COMO APARECE en la carta. Si no encuentras el nombre en la carta, extráelo del URL. NUNCA inventes un nombre que no esté en la carta o en el URL.\n6. En "etiquetas" incluye máximo 3 tags cortos.\n7. En "precio" copia el precio EXACTAMENTE como aparece en la carta, sin reformatear ni convertir moneda. Si no hay precio visible, omite el campo precio.\n\nResponde SOLO con un JSON válido sin backticks ni texto adicional. Formato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","etiquetas":["..."]}]}`;
+function buildUrlPrompt(prefs, url, lang) {
+  const langNote = lang === "en" ? "Respond with dish names and explanations in English." : "Responde con nombres de platos y explicaciones en español.";
+  return `You are a clinical dietitian and expert chef with deep knowledge of allergies, intolerances, and nutritional biochemistry. The user has these dietary preferences and restrictions:\n\n"${prefs}"\n\nThe restaurant menu is at this link: ${url}\n\nAnalyze the menu and recommend exactly the 3 best dishes for this person.\n\nSTRICT RULES:\n1. Analyze EVERY ingredient, including sauces, dressings, marinades and sides.\n2. If there is ANY DOUBT about a hidden ingredient, discard the dish.\n3. Only recommend dishes where you are CERTAIN all ingredients are safe. No modifications.\n4. Order from safest to least safe.\n5. In "por_que" explain specifically why the dish is compatible. Be specific, not generic.\n6. In "advertencia" include any potentially problematic ingredient (optional).\n7. In "restaurante" put the restaurant name as it appears on the menu. If not found, extract it from the URL. NEVER invent a name.\n8. In "etiquetas" include maximum 3 short tags.\n9. In "precio" copy the price EXACTLY as it appears. If no price, omit the field.\n10. If there are not 3 completely safe dishes, include fewer.\n11. NEVER recommend categories or sections. Only specific named dishes.\n12. NEVER assume ingredients. Only analyze what is explicitly on the menu.\n13. If the link does not contain a restaurant menu, return: {"not_menu": true, "restaurante": ""}\n\n${langNote}\n\nYour response must be ONLY the JSON. Start with { and end with }.\nExact format:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
 }
 
 export default function App() {
+  const [lang, setLang] = useState("es");
+  const t = T[lang];
   const [step, setStep] = useState(1);
   const [prefs, setPrefs] = useState("");
   const [files, setFiles] = useState([]);
@@ -81,7 +150,7 @@ export default function App() {
     const res = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages }),
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1500, messages }),
     });
     if (res.status === 429) {
       const data = await res.json();
@@ -93,13 +162,13 @@ export default function App() {
     try {
       return JSON.parse(clean);
     } catch {
-      return { restaurante: "No disponible", platos: [], error: "No se pudo analizar esta carta." };
+      return { restaurante: "No disponible", platos: [], error: t.fileError };
     }
   };
 
   const analyze = async () => {
     if (files.length === 0 && validUrls.length === 0) {
-      setError("Por favor sube al menos una carta o agrega un link.");
+      setError(t.errNoMenu);
       return;
     }
     setError("");
@@ -121,11 +190,15 @@ export default function App() {
           const contentPart = isImg
             ? { type: "image", source: { type: "base64", media_type: file.type, data: base64 } }
             : { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } };
-          const messages = [{ role: "user", content: [contentPart, { type: "text", text: buildPrompt(prefs) }] }];
+          const messages = [{ role: "user", content: [contentPart, { type: "text", text: buildPrompt(prefs, lang) }] }];
           const parsed = await analyzeOne(messages);
-          allResults.push({ ...parsed, source: file.name });
+          if (parsed.not_menu) {
+            allResults.push({ restaurante: file.name, platos: [], error: t.notMenu });
+          } else {
+            allResults.push({ ...parsed, source: file.name });
+          }
         } catch {
-          allResults.push({ restaurante: file.name, platos: [], error: "No se pudo analizar este archivo. Asegúrate que la imagen sea clara y el texto legible." });
+          allResults.push({ restaurante: file.name, platos: [], error: t.fileError });
         }
       }
 
@@ -133,12 +206,16 @@ export default function App() {
         setProgress({ current: files.length + i + 1, total });
         const url = validUrls[i].trim();
         try {
-          const messages = [{ role: "user", content: buildUrlPrompt(prefs, url) }];
+          const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
           const parsed = await analyzeOne(messages);
-          allResults.push({ ...parsed, source: url });
+          if (parsed.not_menu) {
+            allResults.push({ restaurante: url, platos: [], error: t.notMenu });
+          } else {
+            allResults.push({ ...parsed, source: url });
+          }
         } catch (e) {
           if (e.message && e.message.includes("Límite")) throw e;
-          allResults.push({ restaurante: url, platos: [], error: "No se pudo acceder a este link. Prueba subiendo una foto o PDF." });
+          allResults.push({ restaurante: url, platos: [], error: t.accessError });
         }
       }
 
@@ -162,6 +239,8 @@ export default function App() {
     logo: { fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 700, fontStyle: "italic", letterSpacing: "0.02em", display: "block", marginBottom: 4, textAlign: "center" },
     logoSub: { fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#888", display: "block", textAlign: "center" },
     divider: { width: 36, height: 1, background: "#ddd", margin: "0.75rem auto 2rem" },
+    langToggle: { position: "fixed", top: 16, right: 20, display: "flex", gap: 4, background: "#f0efed", borderRadius: 20, padding: "3px 4px", zIndex: 100 },
+    langBtn: (active) => ({ background: active ? "#111" : "transparent", color: active ? "white" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", letterSpacing: "0.05em" }),
     steps: { display: "flex", justifyContent: "center", marginBottom: "2rem" },
     stepWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, maxWidth: 110, position: "relative" },
     dot: (active, done) => ({ width: 24, height: 24, borderRadius: "50%", border: `1.5px solid ${done ? "#5c9" : active ? "#111" : "#ccc"}`, background: done ? "#e8fbe8" : active ? "#111" : "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: done ? "#2a7a2a" : active ? "white" : "#aaa", position: "relative", zIndex: 1, transition: "all 0.3s" }),
@@ -188,6 +267,7 @@ export default function App() {
     tagsWrap: { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 },
     tag: { fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "#edfaf3", color: "#1a7a4a", letterSpacing: "0.04em" },
     dishWhy: { fontSize: 13, color: "#555", lineHeight: 1.6, paddingTop: 10, borderTop: "0.5px solid #f0f0f0" },
+    advertencia: { fontSize: 12, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 6, padding: "6px 10px", marginTop: 8 },
     restartBtn: { width: "100%", padding: 11, marginTop: "1.25rem", background: "transparent", color: "#777", border: "0.5px solid #ddd", borderRadius: 12, fontFamily: "inherit", fontSize: 13, cursor: "pointer" },
     medal: (bg, color) => ({ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: bg, color, fontSize: 10, fontWeight: 600, marginRight: 6 }),
     progressBg: { height: 3, background: "#eee", borderRadius: 2, marginBottom: 8 },
@@ -201,12 +281,17 @@ export default function App() {
     <div style={s.wrap}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
 
-      <span style={s.logo}>La Carta Personalizada</span>
-      <span style={s.logoSub}>Tu menú a medida</span>
+      <div style={s.langToggle}>
+        <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+        <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+      </div>
+
+      <span style={s.logo}>{t.logo}</span>
+      <span style={s.logoSub}>{t.logoSub}</span>
       <div style={s.divider} />
 
       <div style={s.steps}>
-        {[["Preferencias", 1], ["Las cartas", 2], ["Mis platos", 3]].map(([lbl, n], i) => (
+        {[[t.step1, 1], [t.step2, 2], [t.step3, 3]].map(([lbl, n], i) => (
           <div key={n} style={s.stepWrap}>
             {i < 2 && <div style={s.connector} />}
             <div style={s.dot(step === n, step > n)}>{step > n ? "✓" : n}</div>
@@ -217,39 +302,29 @@ export default function App() {
 
       {step === 1 && (
         <div>
-          <p style={s.title}>¿Qué comes y qué no comes?</p>
-          <p style={s.hint}>Escribe en lenguaje natural tus restricciones, alergias, preferencias o lo que no te gusta.</p>
-          <textarea
-            style={s.textarea}
-            value={prefs}
-            onChange={e => setPrefs(e.target.value)}
-            placeholder="Ej: Soy vegetariana, no como gluten ni lactosa. Me encantan los sabores picantes. No soporto el cilantro..."
-          />
+          <p style={s.title}>{t.title1}</p>
+          <p style={s.hint}>{t.hint1}</p>
+          <textarea style={s.textarea} value={prefs} onChange={e => setPrefs(e.target.value)} placeholder={t.placeholder1} />
           {!prefs.trim() && error && <div style={s.errorBox}>{error}</div>}
           <button style={s.btn} onClick={() => {
-            if (!prefs.trim()) { setError("Por favor describe tus preferencias."); return; }
+            if (!prefs.trim()) { setError(t.errPrefs); return; }
             setError(""); setStep(2);
-          }}>Continuar →</button>
+          }}>{t.continue}</button>
         </div>
       )}
 
       {step === 2 && (
         <div>
-          <p style={s.title}>Agrega las cartas</p>
-          <p style={s.hint}>Sube hasta 5 imágenes o PDFs, y/o agrega hasta 5 links de cartas online.</p>
+          <p style={s.title}>{t.title2}</p>
+          <p style={s.hint}>{t.hint2}</p>
 
-          <span style={s.sectionLabel}>Imágenes o PDFs {files.length > 0 && `(${files.length}/5)`}</span>
+          <span style={s.sectionLabel}>{t.uploadLabel} {files.length > 0 && `(${files.length}/5)`}</span>
           {files.length < 5 && (
-            <div
-              style={s.uploadZone(dragging)}
-              onClick={() => document.getElementById("file-inp").click()}
-              onDragOver={e => { e.preventDefault(); setDragging(true); }}
-              onDrop={onDrop}
-              onDragLeave={() => setDragging(false)}
-            >
+            <div style={s.uploadZone(dragging)} onClick={() => document.getElementById("file-inp").click()}
+              onDragOver={e => { e.preventDefault(); setDragging(true); }} onDrop={onDrop} onDragLeave={() => setDragging(false)}>
               <div style={{ fontSize: 22, marginBottom: 6, opacity: 0.35 }}>⬆</div>
-              <p style={{ fontSize: 13, color: "#555", marginBottom: 3 }}>Arrastra imágenes o PDFs aquí</p>
-              <p style={{ fontSize: 12, color: "#aaa", fontStyle: "italic" }}>o haz clic para seleccionar (máx. 5)</p>
+              <p style={{ fontSize: 13, color: "#555", marginBottom: 3 }}>{t.uploadText}</p>
+              <p style={{ fontSize: 12, color: "#aaa", fontStyle: "italic" }}>{t.uploadSub}</p>
             </div>
           )}
           <input id="file-inp" type="file" accept="image/*,.pdf" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
@@ -266,39 +341,23 @@ export default function App() {
           )}
 
           <div style={{ height: 20 }} />
-          <span style={s.sectionLabel}>Links de cartas online {validUrls.length > 0 && `(${validUrls.length}/5)`}</span>
-
+          <span style={s.sectionLabel}>{t.linksLabel} {validUrls.length > 0 && `(${validUrls.length}/5)`}</span>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {urls.map((url, i) => (
               <div key={i}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input
-                    style={s.input}
-                    type="url"
-                    value={url}
-                    onChange={e => handleUrlChange(i, e.target.value)}
-                    placeholder="https://restaurante.com/carta"
-                  />
-                  {urls.length > 1 && (
-                    <button style={s.removeBtn} onClick={() => setUrls(prev => prev.filter((_, j) => j !== i))}>✕</button>
-                  )}
+                  <input style={s.input} type="url" value={url} onChange={e => handleUrlChange(i, e.target.value)} placeholder={t.linkPlaceholder} />
+                  {urls.length > 1 && <button style={s.removeBtn} onClick={() => setUrls(prev => prev.filter((_, j) => j !== i))}>✕</button>}
                 </div>
-                {getUrlWarning(url) && (
-                  <div style={s.warnBox}>⚠ {getUrlWarning(url)}</div>
-                )}
+                {getUrlWarning(url, t) && <div style={s.warnBox}>⚠ {getUrlWarning(url, t)}</div>}
               </div>
             ))}
           </div>
-
-          {urls.length < 5 && (
-            <button style={{ ...s.addBtn, marginTop: 8 }} onClick={() => setUrls(prev => [...prev, ""])}>
-              + Agregar otro link
-            </button>
-          )}
+          {urls.length < 5 && <button style={{ ...s.addBtn, marginTop: 8 }} onClick={() => setUrls(prev => [...prev, ""])}>{t.addLink}</button>}
 
           {error && <div style={s.errorBox}>{error}</div>}
-          <button style={s.btn} onClick={analyze}>Ver mis platos recomendados</button>
-          <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 7, fontStyle: "italic" }}>Analizando con inteligencia artificial</p>
+          <button style={s.btn} onClick={analyze}>{t.analyze}</button>
+          <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 7, fontStyle: "italic" }}>{t.analyzingSub}</p>
         </div>
       )}
 
@@ -308,56 +367,44 @@ export default function App() {
             <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
               <div style={s.loader} />
               <p style={{ fontFamily: "Georgia, serif", fontSize: 17, fontStyle: "italic", marginBottom: 10 }}>
-                Analizando carta {progress.current} de {progress.total}…
+                {t.analyzing} {progress.current} {t.of} {progress.total}…
               </p>
-              <div style={s.progressBg}>
-                <div style={s.progressBar(pct)} />
-              </div>
+              <div style={s.progressBg}><div style={s.progressBar(pct)} /></div>
               <p style={{ fontSize: 12, color: "#aaa", marginTop: 6 }}>{pct}%</p>
             </div>
           )}
-
           {!loading && error && (
-            <>
-              <div style={s.errorBox}>{error}</div>
-              <button style={s.restartBtn} onClick={restart}>← Empezar de nuevo</button>
-            </>
+            <><div style={s.errorBox}>{error}</div><button style={s.restartBtn} onClick={restart}>{t.restart}</button></>
           )}
-
           {!loading && results && (
             <>
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(numResults, 3)}, 1fr)`, gap: 24, alignItems: "start" }}>
                 {results.map((r, ri) => (
                   <div key={ri} style={s.restaurantSection}>
-                    <p style={s.restaurantTitle}>{r.restaurante && r.restaurante !== "Restaurante" ? r.restaurante : (r.source ? (() => { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } })() : "Restaurante")}</p>
-                    {r.error && (
-                      <div style={{ padding: "10px 13px", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, color: "#7a5a00", fontSize: 13 }}>
-                        No se pudo analizar esta carta. Si es una imagen, asegúrate que la foto sea clara y legible. Si es un link, el sitio puede estar bloqueando el acceso — prueba subiendo una foto o PDF.
-                      </div>
-                    )}
+                    <p style={s.restaurantTitle}>
+                      {r.restaurante && r.restaurante !== "Restaurante" && r.restaurante !== "No disponible"
+                        ? r.restaurante
+                        : r.source ? (() => { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } })() : "Restaurante"}
+                    </p>
+                    {r.error && <div style={s.warnBox}>⚠ {r.error}</div>}
                     {!r.error && (r.platos || []).slice(0, 3).map((p, i) => {
-                      const { label, bg, color } = RANKS[i];
+                      const { bg, color } = RANKS[i];
+                      const label = lang === "es" ? RANKS[i].label_es : RANKS[i].label_en;
                       return (
                         <div key={i} style={s.dishCard}>
                           <div style={s.dishRank}><span style={s.medal(bg, color)}>{i + 1}</span>{label}</div>
                           <div style={s.dishName}>{p.nombre}</div>
                           {p.precio && <div style={s.dishPrice}>{p.precio}</div>}
-                          {p.etiquetas?.length > 0 && (
-                            <div style={s.tagsWrap}>{p.etiquetas.map((t, j) => <span key={j} style={s.tag}>{t}</span>)}</div>
-                          )}
+                          {p.etiquetas?.length > 0 && <div style={s.tagsWrap}>{p.etiquetas.map((tag, j) => <span key={j} style={s.tag}>{tag}</span>)}</div>}
                           <div style={s.dishWhy}>{p.por_que}</div>
-                        {p.advertencia && (
-                          <div style={{fontSize: 12, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 6, padding: "6px 10px", marginTop: 8}}>
-                            ⚠ {p.advertencia}
-                          </div>
-                        )}
+                          {p.advertencia && <div style={s.advertencia}>⚠ {p.advertencia}</div>}
                         </div>
                       );
                     })}
                   </div>
                 ))}
               </div>
-              <button style={s.restartBtn} onClick={restart}>← Empezar de nuevo</button>
+              <button style={s.restartBtn} onClick={restart}>{t.restart}</button>
             </>
           )}
         </div>
