@@ -2,8 +2,7 @@ export async function onRequestPost(context) {
   const apiKey = context.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "API key not configured" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+      status: 500, headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -18,7 +17,6 @@ export async function onRequestPost(context) {
       },
       body,
     });
-
     const data = await response.json();
     return new Response(JSON.stringify(data), {
       status: response.status,
@@ -26,8 +24,7 @@ export async function onRequestPost(context) {
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: "Error connecting to Anthropic", detail: err.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+      status: 500, headers: { "Content-Type": "application/json" },
     });
   }
 }
