@@ -41,7 +41,7 @@ function buildPrompt(prefs) {
 }
 
 function buildUrlPrompt(prefs, url) {
-  return `Eres un sommelier y chef experto. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nEl menú del restaurante está en este link: ${url}\n\nAnaliza la carta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Solo recomienda platos que YA cumplan con todas las restricciones TAL COMO ESTÁN en la carta. Sin modificaciones ni sustituciones.\n2. Si un plato necesita adaptación, descártalo.\n3. Ordena del más compatible al menos compatible.\n4. En "por_que" explica en 1-2 frases por qué el plato ya es compatible. Nunca menciones sustituciones.\n5. En "restaurante" pon el nombre del restaurante.\n6. En "etiquetas" incluye máximo 3 tags cortos.\n7. En "precio" copia el precio EXACTAMENTE como aparece en la carta, sin reformatear ni convertir moneda. Si no hay precio visible, omite el campo precio.\n\nResponde SOLO con un JSON válido sin backticks ni texto adicional. Formato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","etiquetas":["..."]}]}`;
+  return `Eres un sommelier y chef experto. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nEl menú del restaurante está en este link: ${url}\n\nAnaliza la carta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Solo recomienda platos que YA cumplan con todas las restricciones TAL COMO ESTÁN en la carta. Sin modificaciones ni sustituciones.\n2. Si un plato necesita adaptación, descártalo.\n3. Ordena del más compatible al menos compatible.\n4. En "por_que" explica en 1-2 frases por qué el plato ya es compatible. Nunca menciones sustituciones.\n5. En "restaurante" pon el nombre del restaurante TAL COMO APARECE en la carta. Si no encuentras el nombre en la carta, extráelo del URL. NUNCA inventes un nombre que no esté en la carta o en el URL.\n6. En "etiquetas" incluye máximo 3 tags cortos.\n7. En "precio" copia el precio EXACTAMENTE como aparece en la carta, sin reformatear ni convertir moneda. Si no hay precio visible, omite el campo precio.\n\nResponde SOLO con un JSON válido sin backticks ni texto adicional. Formato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","etiquetas":["..."]}]}`;
 }
 
 export default function App() {
@@ -325,7 +325,7 @@ export default function App() {
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(numResults, 3)}, 1fr)`, gap: 24, alignItems: "start" }}>
                 {results.map((r, ri) => (
                   <div key={ri} style={s.restaurantSection}>
-                    <p style={s.restaurantTitle}>{r.restaurante || "Restaurante"}</p>
+                    <p style={s.restaurantTitle}>{r.restaurante && r.restaurante !== "Restaurante" ? r.restaurante : (r.source ? (() => { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } })() : "Restaurante")}</p>
                     {r.error && (
                       <div style={{ padding: "10px 13px", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, color: "#7a5a00", fontSize: 13 }}>
                         No se pudo analizar esta carta — el sitio puede estar bloqueando el acceso. Prueba subiendo una foto o PDF en su lugar.
