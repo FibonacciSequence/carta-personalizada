@@ -37,7 +37,7 @@ function getUrlWarning(url) {
 }
 
 function buildPrompt(prefs) {
-  return `Eres un sommelier y chef experto. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nAnaliza la carta adjunta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Solo recomienda platos que YA cumplan con todas las restricciones TAL COMO ESTÁN en la carta. Sin modificaciones ni sustituciones.\n2. Si un plato necesita adaptación, descártalo.\n3. Ordena del más compatible al menos compatible.\n4. En "por_que" explica en 1-2 frases por qué el plato ya es compatible. Nunca menciones sustituciones.\n5. En "restaurante" pon el nombre del restaurante tal como aparece en la carta (si no se menciona, usa "Restaurante").\n6. En "etiquetas" incluye máximo 3 tags cortos como "Sin gluten", "Vegano", "Alto en proteína".\n7. En "precio" copia el precio EXACTAMENTE como aparece en la carta, sin reformatear ni convertir moneda. Si dice "S/. 18" escribe "S/. 18". Si no hay precio visible, omite el campo precio.\n8. Si no hay 3 platos completamente compatibles, completa el resto con los más cercanos indicando en "por_que" qué ingrediente menor podría ser un problema.\n\nResponde SOLO con un JSON válido sin backticks ni texto adicional. Formato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","etiquetas":["..."]}]}`;
+  return `Eres un sommelier y chef experto. El usuario tiene estas preferencias y restricciones dietarias:\n\n"${prefs}"\n\nAnaliza la carta adjunta y recomienda exactamente los 3 mejores platos para esta persona.\n\nREGLAS ESTRICTAS:\n1. Solo recomienda platos que YA cumplan con todas las restricciones TAL COMO ESTÁN en la carta. Sin modificaciones ni sustituciones.\n2. Si un plato necesita adaptación, descártalo.\n3. Ordena del más compatible al menos compatible.\n4. En "por_que" explica en 1-2 frases por qué el plato ya es compatible. Nunca menciones sustituciones.\n5. En "restaurante" pon el nombre del restaurante tal como aparece en la carta (si no se menciona, usa "Restaurante").\n6. En "etiquetas" incluye máximo 3 tags cortos como "Sin gluten", "Vegano", "Alto en proteína".\n7. En "precio" copia el precio EXACTAMENTE como aparece en la carta, sin reformatear ni convertir moneda. Si dice "S/. 18" escribe "S/. 18". Si no hay precio visible, omite el campo precio.\n8. Si no hay 3 platos completamente compatibles, completa el resto con los más cercanos indicando en "por_que" qué ingrediente menor podría ser un problema.\n\nTu respuesta debe ser ÚNICAMENTE el JSON, sin ninguna palabra antes ni después, sin explicaciones, sin backticks. Empieza directamente con { y termina con }.\nFormato exacto:\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","etiquetas":["..."]}]}`;
 }
 
 function buildUrlPrompt(prefs, url) {
@@ -89,7 +89,7 @@ export default function App() {
     try {
       return JSON.parse(clean);
     } catch {
-      return { restaurante: "No disponible", platos: [], error: "No se pudo acceder a esta carta." };
+      return { restaurante: "No disponible", platos: [], error: "No se pudo analizar esta carta." };
     }
   };
 
@@ -121,7 +121,7 @@ export default function App() {
           const parsed = await analyzeOne(messages);
           allResults.push({ ...parsed, source: file.name });
         } catch {
-          allResults.push({ restaurante: file.name, platos: [], error: "No se pudo analizar este archivo." });
+          allResults.push({ restaurante: file.name, platos: [], error: "No se pudo analizar este archivo. Asegúrate que la imagen sea clara y el texto legible." });
         }
       }
 
@@ -328,7 +328,7 @@ export default function App() {
                     <p style={s.restaurantTitle}>{r.restaurante && r.restaurante !== "Restaurante" ? r.restaurante : (r.source ? (() => { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } })() : "Restaurante")}</p>
                     {r.error && (
                       <div style={{ padding: "10px 13px", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, color: "#7a5a00", fontSize: 13 }}>
-                        No se pudo analizar esta carta — el sitio puede estar bloqueando el acceso. Prueba subiendo una foto o PDF en su lugar.
+                        No se pudo analizar esta carta. Si es una imagen, asegúrate que la foto sea clara y legible. Si es un link, el sitio puede estar bloqueando el acceso — prueba subiendo una foto o PDF.
                       </div>
                     )}
                     {!r.error && (r.platos || []).slice(0, 3).map((p, i) => {
