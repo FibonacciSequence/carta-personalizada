@@ -199,7 +199,7 @@ export default function App() {
 
   const validUrls = urls.filter(u => u.trim());
 
-  const analyzeOne = async (messages) => {
+  const analyzeOne = async (messages, attempt = 1) => {
     const res = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -209,7 +209,12 @@ export default function App() {
     const data = await res.json();
     const text = (data.content || []).map(b => b.text || "").join("");
     const clean = text.replace(/```json|```/g, "").trim();
-    try { return JSON.parse(clean); } catch { return { restaurante: "No disponible", platos: [], error: t.fileError }; }
+    try {
+      return JSON.parse(clean);
+    } catch {
+      if (attempt < 2) return analyzeOne(messages, attempt + 1);
+      return { restaurante: "No disponible", platos: [], error: t.fileError };
+    }
   };
 
   const analyze = async () => {
@@ -235,7 +240,7 @@ export default function App() {
             ? { restaurante: file.name, platos: [], error: t.notMenu, source: file.name }
             : { ...parsed, source: file.name };
           allResults.push(result);
-          await saveAnalysis(result, file.name, "file");
+          if (!result.error && result.platos?.length > 0) await saveAnalysis(result, file.name, "file");
         } catch { allResults.push({ restaurante: file.name, platos: [], error: t.fileError, source: file.name }); }
       }
 
@@ -249,7 +254,7 @@ export default function App() {
             ? { restaurante: url, platos: [], error: t.notMenu, source: url }
             : { ...parsed, source: url };
           allResults.push(result);
-          await saveAnalysis(result, url, "url");
+          if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
         } catch (e) {
           if (e.message?.includes("limit") || e.message?.includes("Límite")) throw e;
           allResults.push({ restaurante: url, platos: [], error: t.accessError, source: url });
