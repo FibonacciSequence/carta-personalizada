@@ -18,12 +18,19 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   const userId = context.request.headers.get("x-user-id");
+  const userEmail = context.request.headers.get("x-user-email") || "";
   if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
 
   try {
     const { prefs } = await context.request.json();
     const db = context.env.DB;
 
+    // Upsert user
+    await db.prepare(
+      "INSERT OR IGNORE INTO users (id, email) VALUES (?, ?)"
+    ).bind(userId, userEmail).run();
+
+    // Upsert preferences
     const existing = await db.prepare(
       "SELECT id FROM preferences WHERE user_id = ?"
     ).bind(userId).first();

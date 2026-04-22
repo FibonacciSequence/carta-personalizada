@@ -156,7 +156,7 @@ export default function App() {
     if (!isSignedIn || !user || !prefs.trim()) return;
     await fetch("/api/preferences", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user-id": user.id },
+      headers: { "Content-Type": "application/json", "x-user-id": user.id, "x-user-email": user.primaryEmailAddress?.emailAddress || "" },
       body: JSON.stringify({ prefs }),
     });
     setPrefsSaved(true);
@@ -176,7 +176,7 @@ export default function App() {
     if (!isSignedIn || !user) return;
     await fetch("/api/history", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user-id": user.id },
+      headers: { "Content-Type": "application/json", "x-user-id": user.id, "x-user-email": user.primaryEmailAddress?.emailAddress || "" },
       body: JSON.stringify({
         source_name: sourceName, source_type: sourceType,
         restaurante: result.restaurante, platos: result.platos, error: result.error || null,
