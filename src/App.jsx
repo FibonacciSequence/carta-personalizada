@@ -129,7 +129,9 @@ function formatDate(str, lang) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState("es");
+  const [lang, setLang] = useState(() => localStorage.getItem("lang") || "es");
+
+  const changeLang = (l) => { setLang(l); localStorage.setItem("lang", l); };
   const t = T[lang];
   const { user, isLoaded, isSignedIn } = useUser();
   const { signOut } = useClerk();
@@ -228,7 +230,7 @@ export default function App() {
       return JSON.parse(jsonMatch ? jsonMatch[0] : clean);
     } catch {
       if (attempt < 2) return analyzeOne(messages, attempt + 1);
-      return { restaurante: t.unavailable, platos: [], error: t.fileError };
+      return { restaurante: t.unavailable, platos: [], error: "fileError" };
     }
   };
 
@@ -252,11 +254,11 @@ export default function App() {
           const messages = [{ role: "user", content: [contentPart, { type: "text", text: buildPrompt(prefs, lang) }] }];
           const parsed = await analyzeOne(messages);
           const result = parsed.not_menu
-            ? { restaurante: file.name, platos: [], error: t.notMenu, source: file.name }
+            ? { restaurante: file.name, platos: [], error: "notMenu", source: file.name }
             : { ...parsed, source: file.name };
           allResults.push(result);
           if (!result.error && result.platos?.length > 0) await saveAnalysis(result, file.name, "file");
-        } catch { allResults.push({ restaurante: file.name, platos: [], error: t.fileError, source: file.name }); }
+        } catch { allResults.push({ restaurante: file.name, platos: [], error: "fileError", source: file.name }); }
       }
 
       for (let i = 0; i < validUrls.length; i++) {
@@ -266,13 +268,13 @@ export default function App() {
           const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
           const parsed = await analyzeOne(messages);
           const result = parsed.not_menu
-            ? { restaurante: url, platos: [], error: t.notMenu, source: url }
+            ? { restaurante: url, platos: [], error: "notMenu", source: url }
             : { ...parsed, source: url };
           allResults.push(result);
           if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
         } catch (e) {
           if (e.message?.includes("limit") || e.message?.includes("Límite")) throw e;
-          allResults.push({ restaurante: url, platos: [], error: t.accessError, source: url });
+          allResults.push({ restaurante: url, platos: [], error: "accessError", source: url });
         }
       }
       setResults(allResults);
@@ -365,8 +367,8 @@ export default function App() {
   if (view === "signin") return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
       <div style={{ ...s.langToggle, marginBottom: 16 }}>
-        <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
-        <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+        <button style={s.langBtn(lang === "es")} onClick={() => changeLang("es")}>ES</button>
+        <button style={s.langBtn(lang === "en")} onClick={() => changeLang("en")}>EN</button>
       </div>
       <SignIn routing="hash" afterSignInUrl="/" />
       <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
@@ -376,8 +378,8 @@ export default function App() {
   if (view === "signup") return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
       <div style={{ ...s.langToggle, marginBottom: 16 }}>
-        <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
-        <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+        <button style={s.langBtn(lang === "es")} onClick={() => changeLang("es")}>ES</button>
+        <button style={s.langBtn(lang === "en")} onClick={() => changeLang("en")}>EN</button>
       </div>
       <SignUp routing="hash" afterSignUpUrl="/" />
       <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
@@ -412,7 +414,7 @@ export default function App() {
                 onClick={() => deleteHistory(item.id)}>✕</button>
             </div>
             {item.error
-              ? <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ {item.error}</div>
+              ? <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ {t[item.error] || item.error}</div>
               : <div style={s.historyDishes}>{platos.slice(0, 3).map(p => p.nombre).join(" · ")}</div>
             }
             {platos.length > 0 && (
@@ -557,7 +559,7 @@ export default function App() {
                 {results.map((r, ri) => (
                   <div key={ri} style={s.restaurantSection}>
                     <p style={s.restaurantTitle}>{getRestaurantName(r)}</p>
-                    {r.error && <div style={s.warnBox}>⚠ {r.error}</div>}
+                    {r.error && <div style={s.warnBox}>⚠ {t[r.error] || r.error}</div>}
                     {!r.error && (r.platos || []).slice(0, 3).map((p, i) => renderDishCard(p, i))}
                   </div>
                 ))}
