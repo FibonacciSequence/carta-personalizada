@@ -293,9 +293,7 @@ export default function App() {
     setStep(1); setFiles([]); setUrls([""]); setResults(null); setResultsLang(null); setError(""); setLoading(false);
   };
 
-  const reanalyze = () => {
-    setStep(2); setResults(null); setResultsLang(null); setError("");
-  };
+  const reanalyze = () => { setResultsLang(null); analyze(); };
 
   const numResults = results ? results.length : 0;
 
@@ -430,7 +428,7 @@ export default function App() {
             {platos.length > 0 && (
               <button style={{ ...s.btnSecondary, marginTop: 8 }} onClick={() => {
                 setResults([{ restaurante: item.restaurante, platos, source: item.source_name }]);
-                setView("app"); setStep(3);
+                setResultsLang(null); setView("app"); setStep(3);
               }}>{t.reuse}</button>
             )}
           </div>
@@ -565,7 +563,7 @@ export default function App() {
           {!loading && error && <><div style={s.errorBox}>{error}</div><button style={s.restartBtn} onClick={restart}>{t.restart}</button></>}
           {!loading && results && (
             <>
-              {resultsLang && resultsLang !== lang && (
+              {resultsLang && resultsLang !== lang && (files.length > 0 || validUrls.length > 0) && (
                 <div style={{ fontSize: 13, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, padding: "10px 14px", marginBottom: 16 }}>
                   {t.reanalyzeBanner}{" "}
                   <span style={{ cursor: "pointer", textDecoration: "underline", fontWeight: 500 }} onClick={reanalyze}>{t.reanalyzeBtn}</span>
