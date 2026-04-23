@@ -42,6 +42,8 @@ const T = {
     useWithout: "Continuar sin cuenta",
     reuse: "Usar de nuevo",
     analyzedOn: "Analizado el",
+    reanalyzeBanner: "Resultados en inglés —",
+    reanalyzeBtn: "re-analizar en español →",
     deleteEntry: "Eliminar",
     unavailable: "No disponible",
     restaurant: "Restaurante",
@@ -81,6 +83,8 @@ const T = {
     useWithout: "Continue without account",
     reuse: "Use again",
     analyzedOn: "Analyzed on",
+    reanalyzeBanner: "Results in Spanish —",
+    reanalyzeBtn: "re-analyze in English →",
     deleteEntry: "Delete",
     unavailable: "Unavailable",
     restaurant: "Restaurant",
@@ -150,6 +154,7 @@ export default function App() {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [resultsLang, setResultsLang] = useState(null);
 
   // Load saved preferences when user signs in
   useEffect(() => {
@@ -278,13 +283,18 @@ export default function App() {
         }
       }
       setResults(allResults);
+      setResultsLang(lang);
     } catch (e) {
       setError(e.message || t.errGeneric);
     } finally { setLoading(false); }
   };
 
   const restart = () => {
-    setStep(1); setFiles([]); setUrls([""]); setResults(null); setError(""); setLoading(false);
+    setStep(1); setFiles([]); setUrls([""]); setResults(null); setResultsLang(null); setError(""); setLoading(false);
+  };
+
+  const reanalyze = () => {
+    setStep(2); setResults(null); setResultsLang(null); setError("");
   };
 
   const numResults = results ? results.length : 0;
@@ -555,6 +565,12 @@ export default function App() {
           {!loading && error && <><div style={s.errorBox}>{error}</div><button style={s.restartBtn} onClick={restart}>{t.restart}</button></>}
           {!loading && results && (
             <>
+              {resultsLang && resultsLang !== lang && (
+                <div style={{ fontSize: 13, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, padding: "10px 14px", marginBottom: 16 }}>
+                  {t.reanalyzeBanner}{" "}
+                  <span style={{ cursor: "pointer", textDecoration: "underline", fontWeight: 500 }} onClick={reanalyze}>{t.reanalyzeBtn}</span>
+                </div>
+              )}
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(numResults, 3)}, 1fr)`, gap: 24, alignItems: "start" }}>
                 {results.map((r, ri) => (
                   <div key={ri} style={s.restaurantSection}>
