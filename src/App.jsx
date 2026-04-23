@@ -42,6 +42,10 @@ const T = {
     useWithout: "Continuar sin cuenta",
     reuse: "Usar de nuevo",
     analyzedOn: "Analizado el",
+    deleteEntry: "Eliminar",
+    unavailable: "No disponible",
+    restaurant: "Restaurante",
+    errGeneric: "Error. Intenta de nuevo.",
   },
   en: {
     logo: "The Personalized Menu", logoSub: "Your menu, your way",
@@ -77,6 +81,10 @@ const T = {
     useWithout: "Continue without account",
     reuse: "Use again",
     analyzedOn: "Analyzed on",
+    deleteEntry: "Delete",
+    unavailable: "Unavailable",
+    restaurant: "Restaurant",
+    errGeneric: "Error. Please try again.",
   }
 };
 
@@ -108,7 +116,7 @@ function getUrlWarning(url, t) {
 }
 
 function buildPrompt(prefs, lang) {
-  return `You are a clinical dietitian and expert chef with deep knowledge of allergies, intolerances, and nutritional biochemistry. The user has these dietary preferences and restrictions:\n\n"${prefs}"\n\nWhen analyzing each restriction, consider ALL hidden ingredients and derivatives:\n- "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce\n- "No lactose/cow's milk": butter, cream, cheese, yogurt, casein, whey\n- "No soy": tofu, edamame, miso, soy sauce, soy lecithin\n- "No pork": ham, bacon, chorizo, blood sausage, pancetta, lard, pork gelatin\n- "No nitrates/nitrites": cold cuts, cured meats, ham, sausage, hot dog, bacon, processed meats\n- "High histamine foods" to avoid: tuna, sardines, anchovies, shellfish, aged cheeses, wine, beer, vinegar, tomato, spinach, eggplant, avocado, strawberries, citrus, chocolate, cold cuts, fermented foods\n- "DAO blockers" to avoid: alcohol, energy drinks, black tea, green tea, mate\n\nAnalyze the attached menu and recommend exactly the 3 best dishes.\n\nSTRICT RULES:\n1. Analyze EVERY ingredient including sauces, dressings, marinades and sides.\n2. If ANY DOUBT about a hidden ingredient, discard the dish.\n3. Only recommend dishes where you are CERTAIN all ingredients are safe.\n4. The FIRST recommendation must have zero modifications. The SECOND and THIRD can suggest a minor modification if no fully safe option exists — always note it in "por_que".\n5. Order from safest to least safe.\n6. "por_que": explain specifically why each main ingredient is compatible. Be specific, not generic.\n7. "advertencia": optional field for any potentially problematic ingredient.\n8. "restaurante": exact name from menu.\n9. "etiquetas": max 3 short tags.\n10. "precio": copy EXACTLY as on menu. Omit if not visible.\n11. Fewer than 3 is fine — better 1 safe dish than 3 doubtful ones.\n12. NEVER recommend categories or sections. Only specific named dishes.\n13. NEVER assume ingredients. Only analyze what is explicitly on the menu.\n14. If not enough ingredient info, discard the dish.\n15. "nombre": EXACTLY the dish name as on menu.\n16. If NOT a restaurant menu, return: {"not_menu": true, "restaurante": ""}\n\n${lang === "en" ? "Respond in English." : "Responde en español."}\n\nRespond ONLY with JSON. Start with { end with }.\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
+  return `You are a clinical dietitian and expert chef with deep knowledge of allergies, intolerances, and nutritional biochemistry. The user has these dietary preferences and restrictions:\n\n"${prefs}"\n\nWhen analyzing each restriction, consider ALL hidden ingredients and derivatives:\n- "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce\n- "No lactose/cow's milk": butter, cream, cheese, yogurt, casein, whey\n- "No soy": tofu, edamame, miso, soy sauce, soy lecithin\n- "No pork": ham, bacon, chorizo, blood sausage, pancetta, lard, pork gelatin\n- "No nitrates/nitrites": cold cuts, cured meats, ham, sausage, hot dog, bacon, processed meats\n- "High histamine foods" to avoid: tuna, sardines, anchovies, shellfish, aged cheeses, wine, beer, vinegar, tomato, spinach, eggplant, avocado, strawberries, citrus, chocolate, cold cuts, fermented foods\n- "DAO blockers" to avoid: alcohol, energy drinks, black tea, green tea, mate\n\nAnalyze the attached menu and recommend up to 3 of the best dishes.\n\nSTRICT RULES:\n1. Analyze EVERY ingredient including sauces, dressings, marinades and sides.\n2. If ANY DOUBT about a hidden ingredient, discard the dish.\n3. Only recommend dishes where you are CERTAIN all ingredients are safe.\n4. The FIRST recommendation must have zero modifications — if no such dish exists, omit it. The SECOND and THIRD can suggest ONE minor substitution if no fully safe option exists — note it in "advertencia".\n5. Order from safest to least safe.\n6. "por_que": explain specifically why each main ingredient is compatible. Be specific, not generic.\n7. "advertencia": use only if there is a modification or a minor risk. Leave empty string otherwise.\n8. "restaurante": exact name from menu.\n9. "etiquetas": max 3 short tags.\n10. "precio": copy EXACTLY as on menu. Omit if not visible.\n11. Return fewer than 3 if needed — 1 safe dish is better than 3 doubtful ones. Return platos:[] only if nothing on the menu is safe.\n12. NEVER recommend categories or sections. Only specific named dishes.\n13. NEVER assume ingredients. Only analyze what is explicitly on the menu.\n14. If not enough ingredient info, discard the dish.\n15. "nombre": EXACTLY the dish name as on menu.\n16. If NOT a restaurant menu, return: {"not_menu": true, "restaurante": ""}\n\n${lang === "en" ? "Respond in English." : "Responde en español."}\n\nRespond ONLY with JSON. Start with { end with }.\n{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
 }
 
 function buildUrlPrompt(prefs, url, lang) {
@@ -172,6 +180,12 @@ export default function App() {
     setHistoryLoading(false);
   };
 
+  const deleteHistory = async (id) => {
+    if (!isSignedIn || !user) return;
+    await fetch(`/api/history?id=${id}`, { method: "DELETE", headers: { "x-user-id": user.id } }).catch(() => {});
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+
   const saveAnalysis = async (result, sourceName, sourceType) => {
     if (!isSignedIn || !user) return;
     await fetch("/api/history", {
@@ -209,11 +223,12 @@ export default function App() {
     const data = await res.json();
     const text = (data.content || []).map(b => b.text || "").join("");
     const clean = text.replace(/```json|```/g, "").trim();
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
     try {
-      return JSON.parse(clean);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : clean);
     } catch {
       if (attempt < 2) return analyzeOne(messages, attempt + 1);
-      return { restaurante: "No disponible", platos: [], error: t.fileError };
+      return { restaurante: t.unavailable, platos: [], error: t.fileError };
     }
   };
 
@@ -262,7 +277,7 @@ export default function App() {
       }
       setResults(allResults);
     } catch (e) {
-      setError(e.message || "Error. Please try again.");
+      setError(e.message || t.errGeneric);
     } finally { setLoading(false); }
   };
 
@@ -340,9 +355,9 @@ export default function App() {
   };
 
   const getRestaurantName = (r) => {
-    if (r.restaurante && !["Restaurante", "No disponible", ""].includes(r.restaurante)) return r.restaurante;
+    if (r.restaurante && !["Restaurante", "Restaurant", "No disponible", "Unavailable", ""].includes(r.restaurante)) return r.restaurante;
     if (r.source) { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } }
-    return "Restaurante";
+    return t.restaurant;
   };
 
   if (!isLoaded) return null;
@@ -374,8 +389,14 @@ export default function App() {
         const platos = JSON.parse(item.platos_json || "[]");
         return (
           <div key={i} style={s.historyCard}>
-            <div style={s.historyMeta}>{t.analyzedOn} {formatDate(item.created_at, lang)}</div>
-            <div style={s.historyName}>{item.restaurante || item.source_name}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={s.historyMeta}>{t.analyzedOn} {formatDate(item.created_at, lang)}</div>
+                <div style={s.historyName}>{item.restaurante || item.source_name}</div>
+              </div>
+              <button style={{ ...s.removeBtn, fontSize: 11, color: "#ccc", padding: "2px 4px", flexShrink: 0 }}
+                onClick={() => deleteHistory(item.id)}>✕</button>
+            </div>
             {item.error
               ? <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ {item.error}</div>
               : <div style={s.historyDishes}>{platos.slice(0, 3).map(p => p.nombre).join(" · ")}</div>

@@ -1,3 +1,23 @@
+export async function onRequestDelete(context) {
+  const userId = context.request.headers.get("x-user-id");
+  if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+
+  try {
+    const url = new URL(context.request.url);
+    const id = url.searchParams.get("id");
+    if (!id) return new Response(JSON.stringify({ error: "Missing id" }), { status: 400 });
+
+    const db = context.env.DB;
+    await db.prepare("DELETE FROM analyses WHERE id = ? AND user_id = ?").bind(id, userId).run();
+
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
+}
+
 export async function onRequestGet(context) {
   const userId = context.request.headers.get("x-user-id");
   if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
