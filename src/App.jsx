@@ -364,6 +364,10 @@ export default function App() {
 
   if (view === "signin") return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
+      <div style={{ ...s.langToggle, marginBottom: 16 }}>
+        <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+        <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+      </div>
       <SignIn routing="hash" afterSignInUrl="/" />
       <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
     </div>
@@ -371,6 +375,10 @@ export default function App() {
 
   if (view === "signup") return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
+      <div style={{ ...s.langToggle, marginBottom: 16 }}>
+        <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+        <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+      </div>
       <SignUp routing="hash" afterSignUpUrl="/" />
       <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
     </div>
@@ -381,7 +389,13 @@ export default function App() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <p style={s.title}>{t.history}</p>
-        <button style={s.btnSecondary} onClick={() => setView("app")}>← {t.restart.replace("←", "").trim()}</button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={s.langToggle}>
+            <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+            <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+          </div>
+          <button style={s.btnSecondary} onClick={() => setView("app")}>← {t.restart.replace("←", "").trim()}</button>
+        </div>
       </div>
       {historyLoading && <div style={{ textAlign: "center", padding: "2rem" }}><div style={s.loader} /></div>}
       {!historyLoading && history.length === 0 && <p style={{ color: "#888", fontSize: 14 }}>{t.noHistory}</p>}
