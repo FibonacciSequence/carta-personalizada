@@ -534,4 +534,4 @@ export default function App() {
       )}
     </div>
   );
-}
+}STRICT RULES:\\n1. For each dish, separate: CORE ingredients (protein, dough, sauce mixed in, marinade, breading = cannot be removed) from SIDE ingredients (salad served alongside, bread on the side, garnish = can be omitted).\\n2. DISCARD if any CORE ingredient is unsafe or unknown. Example: empanada has wheat dough (gluten) as core → DISCARD.\\n3. RECOMMEND if all CORE ingredients are safe, even if a SIDE is problematic → note it in advertencia. Example: Pollo al Limón (chicken+lemon+grill) with ensalada mixta (tomato) → RECOMMEND, note tomato in salad can be omitted.\\n4. First recommendation: zero issues with any ingredient. Second and third: safe core, may note separable side issue.\\n5. Order from safest to least safe.
