@@ -135,13 +135,14 @@ RECOMMENDATION RULES:
 2. Second and third: dishes where core protein is safe but a separable side may have an issue — note it in advertencia.
 3. Order from safest to least safe.
 4. Prioritize main dishes (grilled meats, proteins) over sides (papas, huevo frito).
-5. In "por_que": explain specifically why the main ingredient is compatible. Mention the separable side issue only in "advertencia".
+5. In "por_que": explain specifically why the main ingredient is compatible. Mention the separable side issue only in "advertencia". OMIT the "advertencia" field entirely if there is nothing to warn about — do NOT write "no warnings" or similar.
 6. In "restaurante": exact name from menu.
 7. In "etiquetas": max 3 short tags.
 8. In "precio": copy EXACTLY as on menu. Omit if not visible.
 9. Fewer than 3 is fine if not enough safe options.
 10. NEVER recommend categories. Only specific named dishes.
-11. If NOT a restaurant menu, return: {"not_menu": true, "restaurante": ""}
+11. URLs from sites like cluvi.pe, opentable.com, mesa247.pe, rappi.com, woki.pe, and similar restaurant or delivery platforms ARE restaurant menus — analyze them as such. Only return {"not_menu": true} if the content is clearly not food-related at all.
+12. If NOT a restaurant menu, return: {"not_menu": true, "restaurante": ""}
 
 ${lang === "en" ? "Respond in English." : "Responde en español."}
 
