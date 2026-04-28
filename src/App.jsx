@@ -447,15 +447,15 @@ export default function App() {
     <div style={s.wrap}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
 
-      {tool === "discover" ? (
+      {tool === "discover" && (
         <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
           setPrefs(p || prefs);
           setUrls([url || ""]);
           setStep(2);
           setTool("carta");
         }} />
-      ) : null}
-      {tool === "carta" && (
+      )}
+      {tool === "carta" && <>
       <div style={s.topBar}>
         <div>
           <div style={s.logo}>{t.logo}</div>
@@ -597,7 +597,7 @@ export default function App() {
         </div>
       )}
     </div>
-      )}
+      </>}
     </div>
   );
 }
