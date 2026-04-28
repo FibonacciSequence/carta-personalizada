@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 function getInitials(name) {
   const words = name.trim().split(/\s+/).filter(w => !["el", "la", "los", "las", "de", "del", "restaurant", "restaurante"].includes(w.toLowerCase()));
@@ -128,9 +128,9 @@ export default function Discover({ onAnalyze, lang = "es" }) {
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState("");
   const [mapLoaded, setMapLoaded] = useState(false);
-  const mapRef = React.useRef(null);
-  const googleMapRef = React.useRef(null);
-  const markersRef = React.useRef([]);
+  const mapRef = useRef(null);
+  const googleMapRef = useRef(null);
+  const markersRef = useRef([]);
 
   const fetchPlaces = useCallback(async (filterId) => {
     setLoading(true);
