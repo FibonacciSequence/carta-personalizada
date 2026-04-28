@@ -1,8 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { ClerkProvider, SignIn, SignUp, useUser, UserButton } from "@clerk/clerk-react";
+import { useState, useEffect } from "react";
+import { SignIn, SignUp, useUser, UserButton } from "@clerk/clerk-react";
 import Discover from "./Discover.jsx";
-
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 const T = {
   es: {
@@ -544,9 +542,5 @@ function AppInner({ lang, setLang, tool, setTool }) {
 export default function App() {
   const [lang, setLang] = useState("es");
   const [tool, setTool] = useState("discover");
-  return (
-    <ClerkProvider publishableKey={CLERK_KEY}>
-      <AppInner lang={lang} setLang={setLang} tool={tool} setTool={setTool} />
-    </ClerkProvider>
-  );
+  return <AppInner lang={lang} setLang={setLang} tool={tool} setTool={setTool} />;
 }
