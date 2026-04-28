@@ -119,7 +119,7 @@ function isTop50(r) {
   return TOP50.some(t => name.includes(t));
 }
 
-export default function Discover({ onAnalyze }) {
+export default function Discover({ onAnalyze, lang = "es" }) {
   const [prefs, setPrefs] = useState("");
   const [activeFilter, setActiveFilter] = useState("todos");
   const [search, setSearch] = useState("");
