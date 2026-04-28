@@ -447,15 +447,15 @@ export default function App() {
     return (
       <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: "100vh", overflow: "hidden" }}>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 1.5rem", borderBottom: "0.5px solid var(--color-border-tertiary)", background: "var(--color-background-primary)" }}>
-          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "var(--color-text-primary)" }}>La Carta Personalizada</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 1.5rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", background: "#0e0e0e" }}>
+          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "#efefef" }}>La Carta Personalizada</span>
           <div style={{ display: "flex", gap: 4, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
-            <button style={{ background: "transparent", color: "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
-            <button style={{ background: "var(--color-text-primary)", color: "var(--color-background-primary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
+            <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
+            <button style={{ background: "rgba(255,255,255,0.12)", color: "#efefef", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
           </div>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px" }}>
-            <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
-            <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: "3px 4px" }}>
+            <button style={{ background: lang === "es" ? "rgba(255,255,255,0.15)" : "transparent", color: lang === "es" ? "#efefef" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setLang("es")}>ES</button>
+            <button style={{ background: lang === "en" ? "rgba(255,255,255,0.15)" : "transparent", color: lang === "en" ? "#efefef" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setLang("en")}>EN</button>
           </div>
         </div>
         <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
