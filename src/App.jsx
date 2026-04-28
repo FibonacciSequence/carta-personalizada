@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import Discover from "./Discover.jsx";
 import { SignIn, SignUp, useUser, useClerk } from "@clerk/clerk-react";
 
 const RANKS = [
@@ -162,6 +163,7 @@ function formatDate(str, lang) {
 export default function App() {
   const [lang, setLang] = useState("es");
   const t = T[lang];
+  const [tool, setTool] = useState("carta"); // carta | discover
   const { user, isLoaded, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -419,12 +421,22 @@ export default function App() {
               ? <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ {item.error}</div>
               : <div style={s.historyDishes}>{platos.slice(0, 3).map(p => p.nombre).join(" · ")}</div>
             }
-            {platos.length > 0 && (
-              <button style={{ ...s.btnSecondary, marginTop: 8 }} onClick={() => {
-                setResults([{ restaurante: item.restaurante, platos, source: item.source_name }]);
-                setView("app"); setStep(3);
-              }}>{t.reuse}</button>
-            )}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              {platos.length > 0 && (
+                <button style={s.btnSecondary} onClick={() => {
+                  setResults([{ restaurante: item.restaurante, platos, source: item.source_name }]);
+                  setView("app"); setStep(3);
+                }}>{t.reuse}</button>
+              )}
+              <button style={{ ...s.btnSecondary, color: "#c0392b", borderColor: "#f5c0c0" }} onClick={async () => {
+                await fetch("/api/history", {
+                  method: "DELETE",
+                  headers: { "Content-Type": "application/json", "x-user-id": user.id },
+                  body: JSON.stringify({ id: item.id }),
+                });
+                setHistory(prev => prev.filter(h => h.id !== item.id));
+              }}>✕</button>
+            </div>
           </div>
         );
       })}
@@ -435,12 +447,25 @@ export default function App() {
     <div style={s.wrap}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
 
+      {tool === "discover" ? (
+        <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
+          setPrefs(p || prefs);
+          setUrls([url || ""]);
+          setStep(2);
+          setTool("carta");
+        }} />
+      ) : null}
+      {tool === "carta" && (
       <div style={s.topBar}>
         <div>
           <div style={s.logo}>{t.logo}</div>
           <div style={s.logoSub}>{t.logoSub}</div>
         </div>
         <div style={s.topRight}>
+          <div style={{ display: "flex", gap: 6, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px" }}>
+            <button style={{ background: tool === "carta" ? "var(--color-text-primary)" : "transparent", color: tool === "carta" ? "var(--color-background-primary)" : "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
+            <button style={{ background: tool === "discover" ? "var(--color-text-primary)" : "transparent", color: tool === "discover" ? "var(--color-background-primary)" : "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("discover")}>Lima Eats</button>
+          </div>
           <div style={s.langToggle}>
             <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
@@ -570,6 +595,8 @@ export default function App() {
             </>
           )}
         </div>
+      )}
+    </div>
       )}
     </div>
   );
