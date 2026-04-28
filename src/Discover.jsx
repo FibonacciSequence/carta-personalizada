@@ -24,13 +24,13 @@ function getAvatarColor(name) {
 
 const FILTERS = [
   { id: "todos", label: "Todos", query: "restaurantes Lima Peru" },
-  { id: "top50", label: "Top 50 Lat.", query: "mejores restaurantes Lima Peru gourmet fine dining" },
-  { id: "sin-gluten", label: "Sin gluten", query: "restaurantes sin gluten Lima Peru" },
-  { id: "vegano", label: "Vegano", query: "restaurantes veganos Lima Peru" },
+  { id: "top50", label: "Top 50 Lat.", query: "Central Maido Kjolle Isolina Mérito Osso restaurante Lima Peru" },
+  { id: "sin-gluten", label: "Sin gluten", query: "restaurantes sin gluten celíaco Lima Peru" },
+  { id: "vegano", label: "Vegano", query: "restaurante vegano vegetariano Lima Peru" },
   { id: "polleria", label: "Pollería", query: "pollería pollo a la brasa Lima Peru" },
   { id: "chifa", label: "Chifa", query: "chifa restaurante chino Lima Peru" },
-  { id: "mariscos", label: "Mariscos", query: "cevichería mariscos Lima Peru" },
-  { id: "sushi", label: "Sushi / Japonesa", query: "restaurante japonés sushi Lima Peru" },
+  { id: "mariscos", label: "Mariscos", query: "cevichería mariscos ceviche Lima Peru" },
+  { id: "sushi", label: "Sushi / Japonesa", query: "restaurante japonés sushi nikkei Lima Peru" },
 ];
 
 const PRICE_MAP = {
@@ -135,7 +135,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     setSelected(null);
     try {
       const f = FILTERS.find(f => f.id === filterId);
-      const res = await fetch(`/api/places?query=${encodeURIComponent(f?.query || "restaurantes Lima Peru")}`);
+      const res = await fetch(`/api/places?query=${encodeURIComponent(f?.query || "restaurantes Lima Peru")}&filter=${filterId}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error.message || "Error");
       setRestaurants(data.places || []);

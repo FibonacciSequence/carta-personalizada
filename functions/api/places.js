@@ -7,29 +7,42 @@ export async function onRequestGet(context) {
   }
 
   const url = new URL(context.request.url);
-  const query = url.searchParams.get("query") || "restaurantes Lima";
-  const type = url.searchParams.get("type") || "";
+  const query = url.searchParams.get("query") || "restaurantes Lima Peru";
+  const filter = url.searchParams.get("filter") || "todos";
+
+  const TYPE_MAP = {
+    "sushi": ["japanese_restaurant", "sushi_restaurant"],
+    "chifa": ["chinese_restaurant"],
+    "mariscos": ["seafood_restaurant"],
+    "polleria": ["chicken_restaurant"],
+    "vegano": ["vegetarian_restaurant", "vegan_restaurant"],
+  };
+
+  const body = {
+    textQuery: query,
+    languageCode: "es",
+    maxResultCount: 20,
+    locationBias: {
+      circle: {
+        center: { latitude: -12.0464, longitude: -77.0428 },
+        radius: 15000.0,
+      },
+    },
+  };
+
+  if (TYPE_MAP[filter]) {
+    body.includedType = TYPE_MAP[filter][0];
+  }
 
   try {
-    // Use Places API (New) Text Search
     const response = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.photos,places.websiteUri,places.currentOpeningHours",
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.photos,places.websiteUri",
       },
-      body: JSON.stringify({
-        textQuery: query + " Lima Peru",
-        languageCode: "es",
-        maxResultCount: 20,
-        locationBias: {
-          circle: {
-            center: { latitude: -12.0464, longitude: -77.0428 },
-            radius: 15000.0,
-          },
-        },
-      }),
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();
