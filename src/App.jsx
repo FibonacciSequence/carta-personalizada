@@ -163,7 +163,7 @@ function formatDate(str, lang) {
 export default function App() {
   const [lang, setLang] = useState("es");
   const t = T[lang];
-  const [tool, setTool] = useState("carta"); // carta | discover
+  const [tool, setTool] = useState("discover"); // carta | discover
   const { user, isLoaded, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
@@ -443,18 +443,34 @@ export default function App() {
     </div>
   );
 
-  return (
-    <div style={s.wrap}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
-
-      {tool === "discover" && (
+  if (tool === "discover") {
+    return (
+      <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: "100vh", overflow: "hidden" }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 1.5rem", borderBottom: "0.5px solid var(--color-border-tertiary)", background: "var(--color-background-primary)" }}>
+          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "var(--color-text-primary)" }}>La Carta Personalizada</span>
+          <div style={{ display: "flex", gap: 4, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
+            <button style={{ background: "transparent", color: "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
+            <button style={{ background: "var(--color-text-primary)", color: "var(--color-background-primary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
+          </div>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px" }}>
+            <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+            <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+          </div>
+        </div>
         <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
           setPrefs(p || prefs);
           setUrls([url || ""]);
           setStep(2);
           setTool("carta");
         }} />
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={s.wrap}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
       {tool === "carta" && <>
       <div style={s.topBar}>
         <div>

@@ -66,12 +66,12 @@ function getLabels(r) {
 function getDistrict(address) {
   if (!address) return "";
   const parts = address.split(",").map(p => p.trim());
-  for (const part of parts) {
-    if (part && !part.match(/^\d/) && part !== "Perú" && part !== "Peru" && part !== "Lima" && part !== "Provincia de Lima") {
-      return part;
-    }
-  }
-  return "";
+  const skip = new Set(["Perú", "Peru", "Lima", "Provincia de Lima", "Lima Metropolitan Area"]);
+  // Try to find district - usually the part before Lima/Perú
+  const valid = parts.filter(p => p && !p.match(/^\d/) && !skip.has(p) && !p.match(/^\d{5}/));
+  // Prefer shorter parts that look like district names (not street addresses)
+  const districts = valid.filter(p => !p.match(/^(Jr\.|Av\.|Calle|Jirón|Avenida|Pasaje|Pje\.)/) && p.length < 30);
+  return districts[0] || valid[0] || "";
 }
 
 function isTop50(r) {
@@ -195,7 +195,9 @@ export default function Discover({ onAnalyze }) {
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleAnalyze(r); }}
-                    style={{ fontSize: 11, padding: "5px 12px", border: "0.5px solid rgba(255,255,255,0.15)", borderRadius: 8, color: textSecondary, cursor: "pointer", background: "transparent", whiteSpace: "nowrap", fontFamily: "inherit", alignSelf: "center", flexShrink: 0 }}
+                    style={{ fontSize: 11, padding: "5px 14px", border: "0.5px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "#ccc", cursor: "pointer", background: "rgba(255,255,255,0.05)", whiteSpace: "nowrap", fontFamily: "inherit", alignSelf: "center", flexShrink: 0, letterSpacing: "0.02em" }}
+                    onMouseEnter={e => e.target.style.background = "rgba(255,255,255,0.12)"}
+                    onMouseLeave={e => e.target.style.background = "rgba(255,255,255,0.05)"}
                   >
                     Analizar →
                   </button>
