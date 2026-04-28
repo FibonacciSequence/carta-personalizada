@@ -1,13 +1,4 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
-  background: #faf9f7;
-  min-height: 100vh;
-}
-
-#root {
-  width: 100%;
-}
-
-textarea, input, button { font-family: inherit; }
+body { background: #0e0e0e; color: #efefef; -webkit-font-smoothing: antialiased; }
+input, textarea, button, select { font-family: inherit; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
