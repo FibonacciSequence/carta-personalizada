@@ -19,8 +19,8 @@ const PRICE_MAP = {
 };
 
 const TYPE_EMOJI = {
-  japanese_restaurant: "🍣",
-  sushi_restaurant: "🍱",
+  japanese_restaurant: "🐟",
+  sushi_restaurant: "🍣",
   chinese_restaurant: "🥢",
   seafood_restaurant: "🦞",
   vegetarian_restaurant: "🥗",
@@ -32,6 +32,20 @@ const TYPE_EMOJI = {
   cafe: "☕",
   pizza_restaurant: "🍕",
   steak_house: "🥩",
+  brazilian_restaurant: "🥩",
+  american_restaurant: "🍔",
+  italian_restaurant: "🍝",
+  mexican_restaurant: "🌮",
+};
+
+const NAME_EMOJI = {
+  central: "🌿", maido: "🐟", kjolle: "🌺", isolina: "🫙",
+  "la mar": "🦞", osaka: "🍣", astrid: "🍫", gastón: "🍽",
+  osso: "🥩", mérito: "🌶", mil: "🌿", pía: "🍳",
+  norky: "🍗", bembos: "🍔", chifa: "🥢", sushi: "🍣",
+  ceviche: "🦞", mariscos: "🦞", pollo: "🍗", pizza: "🍕",
+  burger: "🍔", vegano: "🌿", vegana: "🌿", orgánico: "🌱",
+  parrilla: "🥩", brasa: "🔥", anticucho: "🍢", cebichería: "🦞",
 };
 
 const TYPE_LABEL = {
@@ -53,6 +67,10 @@ const TYPE_LABEL = {
 const TOP50 = ["Central", "Maido", "Kjolle", "Mil", "Mérito", "Osso", "Isolina", "La Mar", "Osaka"];
 
 function getEmoji(r) {
+  const name = (r.displayName?.text || "").toLowerCase();
+  for (const [key, emoji] of Object.entries(NAME_EMOJI)) {
+    if (name.includes(key)) return emoji;
+  }
   const types = r.types || [];
   for (const t of types) { if (TYPE_EMOJI[t]) return TYPE_EMOJI[t]; }
   return "🍽";
@@ -176,7 +194,7 @@ export default function Discover({ onAnalyze }) {
                     transition: "all 0.15s",
                   }}
                 >
-                  <div style={{ width: 48, height: 48, borderRadius: 10, background: "#2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 10, background: "#1c1c1c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                     {emoji}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
