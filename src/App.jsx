@@ -314,54 +314,305 @@ export default function App() {
   const numResults = results ? results.length : 0;
 
   const s = {
-    wrap: { fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", width: "100%", maxWidth: numResults > 1 ? "none" : 600, margin: "0 auto", padding: numResults > 1 ? "2rem 3rem" : "2rem 1.25rem", boxSizing: "border-box", background: "#0e0e0e", minHeight: "100vh", color: "#efefef" },
-    topBar: { display: "flex", alignItems: "center", gap: 12, marginBottom: "2rem", flexWrap: "wrap" },
-    logo: { fontFamily: "Georgia, serif", fontSize: 28, fontWeight: 500, fontStyle: "italic", lineHeight: 1.1, color: "#efefef" },
-    logoSub: { fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555", marginTop: 2 },
-    topRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" },
-    langToggle: { display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px" },
-    langBtn: (active) => ({ background: active ? "rgba(255,255,255,0.15)" : "transparent", color: active ? "#efefef" : "#666", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }),
-    authBtn: { padding: "7px 16px", borderRadius: 20, border: "0.5px solid rgba(255,255,255,0.15)", background: "transparent", color: "#aaa", fontSize: 13, cursor: "pointer", fontFamily: "inherit" },
-    divider: { height: 1, background: "rgba(255,255,255,0.08)", margin: "0 0 1.5rem" },
-    steps: { display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: "2rem" },
-    stepWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, position: "relative" },
-    connector: { position: "absolute", top: 14, right: "calc(50% + 14px)", width: "calc(100% - 28px)", height: 1, background: "rgba(255,255,255,0.1)", minWidth: 40 },
-    dot: (active, done) => ({ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: done ? 13 : 12, fontWeight: 600, background: done ? "#2a7a4a" : active ? "#efefef" : "rgba(255,255,255,0.08)", color: done ? "#fff" : active ? "#0e0e0e" : "#555", border: done ? "none" : active ? "none" : "0.5px solid rgba(255,255,255,0.15)", transition: "all 0.3s" }),
-    dotLabel: (active) => ({ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: active ? "#efefef" : "#555", fontWeight: active ? 600 : 400 }),
-    h1: { fontFamily: "Georgia, serif", fontSize: 26, fontWeight: 500, marginBottom: "0.4rem", color: "#efefef" },
-    subtitle: { fontSize: 14, color: "#666", marginBottom: "1.5rem", lineHeight: 1.5 },
-    label: { fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8, display: "block" },
-    textarea: { width: "100%", minHeight: 120, padding: "14px 16px", border: "0.5px solid rgba(255,255,255,0.12)", borderRadius: 12, fontFamily: "inherit", fontSize: 14, lineHeight: 1.6, resize: "vertical", outline: "none", boxSizing: "border-box", background: "#181818", color: "#efefef" },
-    uploadBox: { border: "1.5px dashed rgba(255,255,255,0.15)", borderRadius: 12, padding: "2.5rem 1rem", textAlign: "center", cursor: "pointer", background: "#111", transition: "border-color 0.2s", marginBottom: "1.25rem" },
-    uploadIcon: { fontSize: 28, color: "#555", marginBottom: 8 },
-    uploadText: { fontSize: 14, color: "#888", marginBottom: 4 },
-    uploadSub: { fontSize: 12, color: "#555", fontStyle: "italic" },
-    fileChip: { display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", background: "#1a1a1a", border: "0.5px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12, color: "#ccc" },
-    fileChipX: { cursor: "pointer", color: "#555", fontSize: 14 },
-    urlInput: { width: "100%", padding: "10px 14px", border: "0.5px solid rgba(255,255,255,0.12)", borderRadius: 10, fontFamily: "inherit", fontSize: 13, outline: "none", marginBottom: 8, boxSizing: "border-box", background: "#181818", color: "#efefef" },
-    addUrl: { padding: "7px 14px", border: "0.5px solid rgba(255,255,255,0.15)", borderRadius: 8, background: "transparent", color: "#888", fontSize: 12, cursor: "pointer", fontFamily: "inherit" },
-    btn: { width: "100%", padding: "14px", background: "#efefef", color: "#0e0e0e", border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: 15, fontWeight: 600, cursor: "pointer", marginTop: "1.25rem", letterSpacing: "0.02em" },
-    btnSecondary: { padding: "7px 16px", border: "0.5px solid rgba(255,255,255,0.15)", borderRadius: 8, background: "transparent", color: "#888", fontSize: 13, cursor: "pointer", fontFamily: "inherit" },
-    btnLink: { background: "none", border: "none", color: "#888", fontSize: 13, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" },
-    analysing: { fontSize: 13, color: "#555", textAlign: "center", marginTop: 8, fontStyle: "italic" },
-    resultsGrid: { display: "grid", gridTemplateColumns: `repeat(${numResults}, 1fr)`, gap: "1.5rem", alignItems: "start" },
-    restaurantName: { fontFamily: "Georgia, serif", fontSize: 18, fontWeight: 500, marginBottom: "1rem", color: "#efefef", paddingBottom: "0.75rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", textTransform: "uppercase", letterSpacing: "0.05em" },
-    dishCard: { background: "#181818", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "1.25rem", marginBottom: "1rem" },
-    dishNum: (i) => ({ width: 26, height: 26, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, marginRight: 8, background: i === 0 ? "#b8860b" : i === 1 ? "#555" : "#4a3000", color: "#fff" }),
-    dishLabel: { fontSize: 11, color: "#666", fontStyle: "italic" },
-    dishName: { fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 600, margin: "0.25rem 0 0.4rem", color: "#efefef" },
-    dishPrice: { fontSize: 14, color: "#666", marginBottom: "0.6rem" },
-    tags: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: "0.75rem" },
-    tag: { fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "#0f2a1a", color: "#4caf80", border: "0.5px solid #1a4a2a" },
-    dishDesc: { fontSize: 13, lineHeight: 1.6, color: "#999", marginBottom: "0.5rem" },
-    warning: { background: "#2a1f00", border: "0.5px solid #4a3a00", borderRadius: 8, padding: "10px 13px", fontSize: 12, color: "#efb840", display: "flex", gap: 8, alignItems: "flex-start", marginTop: "0.5rem" },
-    errorBox: { background: "#2a0f0f", border: "0.5px solid #5a1f1f", borderRadius: 8, padding: "10px 13px", fontSize: 13, color: "#f08080", display: "flex", gap: 8, alignItems: "flex-start" },
-    restartBtn: { display: "block", width: "100%", padding: "14px", border: "0.5px solid rgba(255,255,255,0.15)", borderRadius: 12, background: "transparent", color: "#888", fontSize: 14, cursor: "pointer", fontFamily: "inherit", marginTop: "1.5rem", textAlign: "center" },
-    historyCard: { background: "#181818", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: "0.75rem" },
-    historyDate: { fontSize: 11, color: "#555", marginBottom: 4 },
-    historyName: { fontFamily: "Georgia, serif", fontSize: 17, fontWeight: 500, marginBottom: 4, color: "#efefef" },
-    historyDishes: { fontSize: 12, color: "#666", marginBottom: 8 },
-    spinner: { width: 18, height: 18, border: "2px solid rgba(255,255,255,0.1)", borderTop: "2px solid #efefef", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block", verticalAlign: "middle", marginRight: 8 },
+    wrap: { fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", width: "100%", maxWidth: numResults > 1 ? "none" : 560, margin: "0 auto", padding: numResults > 1 ? "2rem 3rem" : "2rem 1.25rem", boxSizing: "border-box" },
+    topBar: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" },
+    logo: { fontFamily: "Georgia, serif", fontSize: 24, fontWeight: 700, fontStyle: "italic", letterSpacing: "0.02em" },
+    logoSub: { fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: "#888" },
+    topRight: { display: "flex", gap: 8, alignItems: "center" },
+    langToggle: { display: "flex", gap: 3, background: "#f0efed", borderRadius: 20, padding: "3px 4px" },
+    langBtn: (active) => ({ background: active ? "#111" : "transparent", color: active ? "white" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }),
+    authBtn: { background: "none", border: "0.5px solid #ddd", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#555", cursor: "pointer", fontFamily: "inherit" },
+    historyBtn: { background: "none", border: "0.5px solid #ddd", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#555", cursor: "pointer", fontFamily: "inherit" },
+    divider: { width: 36, height: 1, background: "#ddd", margin: "0.5rem auto 1.5rem" },
+    steps: { display: "flex", justifyContent: "center", marginBottom: "2rem" },
+    stepWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1, maxWidth: 110, position: "relative" },
+    dot: (active, done) => ({ width: 24, height: 24, borderRadius: "50%", border: `1.5px solid ${done ? "#5c9" : active ? "#111" : "#ccc"}`, background: done ? "#e8fbe8" : active ? "#111" : "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: done ? "#2a7a2a" : active ? "white" : "#aaa", position: "relative", zIndex: 1 }),
+    connector: { position: "absolute", top: 12, left: "calc(50% + 12px)", width: "calc(100% - 24px)", height: 1, background: "#eee", zIndex: 0 },
+    dotLabel: (active) => ({ fontSize: 10, letterSpacing: "0.07em", textTransform: "uppercase", color: active ? "#111" : "#aaa", textAlign: "center", lineHeight: 1.3 }),
+    title: { fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 600, marginBottom: 6 },
+    hint: { fontSize: 13, color: "#666", marginBottom: "1.1rem", lineHeight: 1.55 },
+    textarea: { width: "100%", minHeight: 110, padding: "12px 14px", border: "0.5px solid #ddd", borderRadius: 12, fontFamily: "inherit", fontSize: 14, lineHeight: 1.6, resize: "vertical", outline: "none", boxSizing: "border-box" },
+    input: { flex: 1, padding: "10px 13px", border: "0.5px solid #ddd", borderRadius: 10, fontFamily: "inherit", fontSize: 13, outline: "none", boxSizing: "border-box", minWidth: 0 },
+    uploadZone: (drag) => ({ border: `1.5px dashed ${drag ? "#555" : "#ccc"}`, borderRadius: 12, padding: "1.5rem 1.25rem", textAlign: "center", cursor: "pointer", background: drag ? "#f7f7f7" : "white", transition: "all 0.2s" }),
+    fileChip: { display: "flex", alignItems: "center", gap: 8, padding: "7px 11px", background: "#f7f7f7", borderRadius: 8, border: "0.5px solid #eee", fontSize: 12 },
+    btn: { width: "100%", padding: "12px", marginTop: "1rem", background: "#111", color: "white", border: "none", borderRadius: 12, fontFamily: "inherit", fontSize: 14, fontWeight: 500, cursor: "pointer" },
+    btnSecondary: { background: "none", border: "0.5px solid #ddd", borderRadius: 8, padding: "6px 12px", fontSize: 12, color: "#555", cursor: "pointer", fontFamily: "inherit" },
+    saveBtn: (saved) => ({ background: saved ? "#edfaf3" : "none", border: `0.5px solid ${saved ? "#5c9" : "#ddd"}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, color: saved ? "#2a7a2a" : "#555", cursor: "pointer", fontFamily: "inherit", transition: "all 0.3s" }),
+    removeBtn: { background: "none", border: "none", color: "#bbb", cursor: "pointer", fontFamily: "inherit", fontSize: 12, padding: "0 4px", flexShrink: 0 },
+    errorBox: { padding: "11px 13px", background: "#fff0f0", border: "0.5px solid #f5c0c0", borderRadius: 8, color: "#c0392b", fontSize: 13, marginTop: 10, lineHeight: 1.5 },
+    warnBox: { fontSize: 12, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 8, padding: "8px 12px", marginTop: 4 },
+    sectionLabel: { fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8, display: "block" },
+    restaurantSection: { marginBottom: "1.5rem" },
+    restaurantTitle: { fontFamily: "Georgia, serif", fontSize: 18, fontWeight: 600, marginBottom: "1rem", paddingBottom: 8, borderBottom: "0.5px solid #eee" },
+    dishCard: { background: "white", border: "0.5px solid #e8e8e8", borderRadius: 12, padding: "1.1rem 1.2rem", marginBottom: 10 },
+    dishRank: { fontFamily: "Georgia, serif", fontSize: 12, fontStyle: "italic", color: "#aaa", marginBottom: 4 },
+    dishName: { fontFamily: "Georgia, serif", fontSize: 19, fontWeight: 600, marginBottom: 6, lineHeight: 1.2 },
+    dishPrice: { fontSize: 13, color: "#888", marginBottom: 8 },
+    tagsWrap: { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 },
+    tag: { fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "#edfaf3", color: "#1a7a4a" },
+    dishWhy: { fontSize: 13, color: "#555", lineHeight: 1.6, paddingTop: 10, borderTop: "0.5px solid #f0f0f0" },
+    advertencia: { fontSize: 12, color: "#7a5a00", background: "#fff8ed", border: "0.5px solid #f5dfa0", borderRadius: 6, padding: "6px 10px", marginTop: 8 },
+    restartBtn: { width: "100%", padding: 11, marginTop: "1.25rem", background: "transparent", color: "#777", border: "0.5px solid #ddd", borderRadius: 12, fontFamily: "inherit", fontSize: 13, cursor: "pointer" },
+    medal: (bg, color) => ({ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: bg, color, fontSize: 10, fontWeight: 600, marginRight: 6 }),
+    progressBg: { height: 3, background: "#eee", borderRadius: 2, marginBottom: 8 },
+    progressBar: (pct) => ({ height: 3, background: "#111", borderRadius: 2, width: `${pct}%`, transition: "width 0.4s ease" }),
+    loader: { width: 28, height: 28, border: "2px solid #eee", borderTopColor: "#111", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 1rem" },
+    historyCard: { background: "white", border: "0.5px solid #e8e8e8", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 10 },
+    historyMeta: { fontSize: 11, color: "#aaa", marginBottom: 4 },
+    historyName: { fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 600, marginBottom: 6 },
+    historyDishes: { fontSize: 12, color: "#666" },
   };
 
+  const pct = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
 
+  const renderDishCard = (p, i) => {
+    const { bg, color } = RANKS[i] || RANKS[2];
+    const label = lang === "es" ? (RANKS[i] || RANKS[2]).label_es : (RANKS[i] || RANKS[2]).label_en;
+    return (
+      <div key={i} style={s.dishCard}>
+        <div style={s.dishRank}><span style={s.medal(bg, color)}>{i + 1}</span>{label}</div>
+        <div style={s.dishName}>{p.nombre}</div>
+        {p.precio && <div style={s.dishPrice}>{p.precio}</div>}
+        {p.etiquetas?.length > 0 && <div style={s.tagsWrap}>{p.etiquetas.map((tag, j) => <span key={j} style={s.tag}>{tag}</span>)}</div>}
+        <div style={s.dishWhy}>{p.por_que}</div>
+        {p.advertencia && <div style={s.advertencia}>⚠ {p.advertencia}</div>}
+      </div>
+    );
+  };
+
+  const getRestaurantName = (r) => {
+    if (r.restaurante && !["Restaurante", "No disponible", ""].includes(r.restaurante)) return r.restaurante;
+    if (r.source) { try { return new URL(r.source).hostname.replace("www.", ""); } catch { return r.source; } }
+    return "Restaurante";
+  };
+
+  if (!isLoaded) return null;
+
+  if (view === "signin") return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
+      <SignIn routing="hash" afterSignInUrl="/" />
+      <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
+    </div>
+  );
+
+  if (view === "signup") return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3rem 1rem" }}>
+      <SignUp routing="hash" afterSignUpUrl="/" />
+      <button style={{ ...s.btnSecondary, marginTop: 16 }} onClick={() => setView("app")}>{t.useWithout}</button>
+    </div>
+  );
+
+  if (view === "history") return (
+    <div style={{ fontFamily: "'DM Sans', sans-serif", maxWidth: 600, margin: "0 auto", padding: "2rem 1.25rem" }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <p style={s.title}>{t.history}</p>
+        <button style={s.btnSecondary} onClick={() => setView("app")}>← {t.restart.replace("←", "").trim()}</button>
+      </div>
+      {historyLoading && <div style={{ textAlign: "center", padding: "2rem" }}><div style={s.loader} /></div>}
+      {!historyLoading && history.length === 0 && <p style={{ color: "#888", fontSize: 14 }}>{t.noHistory}</p>}
+      {history.map((item, i) => {
+        const platos = JSON.parse(item.platos_json || "[]");
+        return (
+          <div key={i} style={s.historyCard}>
+            <div style={s.historyMeta}>{t.analyzedOn} {formatDate(item.created_at, lang)}</div>
+            <div style={s.historyName}>{item.restaurante || item.source_name}</div>
+            {item.error
+              ? <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ {item.error}</div>
+              : <div style={s.historyDishes}>{platos.slice(0, 3).map(p => p.nombre).join(" · ")}</div>
+            }
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              {platos.length > 0 && (
+                <button style={s.btnSecondary} onClick={() => {
+                  setResults([{ restaurante: item.restaurante, platos, source: item.source_name }]);
+                  setView("app"); setStep(3);
+                }}>{t.reuse}</button>
+              )}
+              <button style={{ ...s.btnSecondary, color: "#c0392b", borderColor: "#f5c0c0" }} onClick={async () => {
+                await fetch("/api/history", {
+                  method: "DELETE",
+                  headers: { "Content-Type": "application/json", "x-user-id": user.id },
+                  body: JSON.stringify({ id: item.id }),
+                });
+                setHistory(prev => prev.filter(h => h.id !== item.id));
+              }}>✕</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  if (tool === "discover") {
+    return (
+      <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: "100vh", overflow: "hidden" }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 1.5rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", background: "#0e0e0e" }}>
+          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "#efefef" }}>La Carta Personalizada</span>
+          <div style={{ display: "flex", gap: 4, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
+            <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
+            <button style={{ background: "rgba(255,255,255,0.12)", color: "#efefef", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
+          </div>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: "3px 4px" }}>
+            <button style={{ background: lang === "es" ? "rgba(255,255,255,0.15)" : "transparent", color: lang === "es" ? "#efefef" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setLang("es")}>ES</button>
+            <button style={{ background: lang === "en" ? "rgba(255,255,255,0.15)" : "transparent", color: lang === "en" ? "#efefef" : "#888", border: "none", borderRadius: 16, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setLang("en")}>EN</button>
+          </div>
+        </div>
+        <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
+          setPrefs(p || prefs);
+          setUrls([url || ""]);
+          setStep(2);
+          setTool("carta");
+        }} />
+      </div>
+    );
+  }
+
+  return (
+    <div style={s.wrap}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+      {tool === "carta" && <>
+      <div style={s.topBar}>
+        <div>
+          <div style={s.logo}>{t.logo}</div>
+          <div style={s.logoSub}>{t.logoSub}</div>
+        </div>
+        <div style={s.topRight}>
+          <div style={{ display: "flex", gap: 6, background: "var(--color-background-secondary)", borderRadius: 20, padding: "3px 4px" }}>
+            <button style={{ background: tool === "carta" ? "var(--color-text-primary)" : "transparent", color: tool === "carta" ? "var(--color-background-primary)" : "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
+            <button style={{ background: tool === "discover" ? "var(--color-text-primary)" : "transparent", color: tool === "discover" ? "var(--color-background-primary)" : "var(--color-text-secondary)", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("discover")}>Lima Eats</button>
+          </div>
+          <div style={s.langToggle}>
+            <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
+            <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
+          </div>
+          {isSignedIn ? (
+            <>
+              <button style={s.historyBtn} onClick={() => { setView("history"); loadHistory(); }}>{t.history}</button>
+              <button style={s.authBtn} onClick={() => signOut()}>{t.signOut}</button>
+            </>
+          ) : (
+            <>
+              <button style={s.authBtn} onClick={() => setView("signin")}>{t.signIn}</button>
+              <button style={s.authBtn} onClick={() => setView("signup")}>{t.signUp}</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div style={s.divider} />
+
+      <div style={s.steps}>
+        {[[t.step1, 1], [t.step2, 2], [t.step3, 3]].map(([lbl, n], i) => (
+          <div key={n} style={s.stepWrap}>
+            {i < 2 && <div style={s.connector} />}
+            <div style={s.dot(step === n, step > n)}>{step > n ? "✓" : n}</div>
+            <span style={s.dotLabel(step === n)}>{lbl}</span>
+          </div>
+        ))}
+      </div>
+
+      {step === 1 && (
+        <div>
+          <p style={s.title}>{t.title1}</p>
+          <p style={s.hint}>{t.hint1}</p>
+          <textarea style={s.textarea} value={prefs} onChange={e => setPrefs(e.target.value)} placeholder={t.placeholder1} />
+          {isSignedIn && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+              <button style={s.saveBtn(prefsSaved)} onClick={savePreferences}>
+                {prefsSaved ? t.savedOk : t.savePrefs}
+              </button>
+            </div>
+          )}
+          {!isSignedIn && (
+            <p style={{ fontSize: 12, color: "#aaa", marginTop: 8, textAlign: "center" }}>
+              <span style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setView("signin")}>{t.signIn}</span> {lang === "es" ? "para guardar tus preferencias" : "to save your preferences"}
+            </p>
+          )}
+          {!prefs.trim() && error && <div style={s.errorBox}>{error}</div>}
+          <button style={s.btn} onClick={() => {
+            if (!prefs.trim()) { setError(t.errPrefs); return; }
+            setError(""); setStep(2);
+          }}>{t.continue}</button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div>
+          <p style={s.title}>{t.title2}</p>
+          <p style={s.hint}>{t.hint2}</p>
+
+          <span style={s.sectionLabel}>{t.uploadLabel} {files.length > 0 && `(${files.length}/5)`}</span>
+          {files.length < 5 && (
+            <div style={s.uploadZone(dragging)} onClick={() => document.getElementById("file-inp").click()}
+              onDragOver={e => { e.preventDefault(); setDragging(true); }} onDrop={onDrop} onDragLeave={() => setDragging(false)}>
+              <div style={{ fontSize: 22, marginBottom: 6, opacity: 0.35 }}>⬆</div>
+              <p style={{ fontSize: 13, color: "#555", marginBottom: 3 }}>{t.uploadText}</p>
+              <p style={{ fontSize: 12, color: "#aaa", fontStyle: "italic" }}>{t.uploadSub}</p>
+            </div>
+          )}
+          <input id="file-inp" type="file" accept="image/*,.pdf" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
+          {files.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+              {files.map((f, i) => (
+                <div key={i} style={s.fileChip}>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>📎 {f.name}</span>
+                  <button style={s.removeBtn} onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ height: 20 }} />
+          <span style={s.sectionLabel}>{t.linksLabel} {validUrls.length > 0 && `(${validUrls.length}/5)`}</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {urls.map((url, i) => (
+              <div key={i}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input style={s.input} type="url" value={url} onChange={e => handleUrlChange(i, e.target.value)} placeholder={t.linkPlaceholder} />
+                  {urls.length > 1 && <button style={s.removeBtn} onClick={() => setUrls(prev => prev.filter((_, j) => j !== i))}>✕</button>}
+                </div>
+                {getUrlWarning(url, t) && <div style={s.warnBox}>⚠ {getUrlWarning(url, t)}</div>}
+              </div>
+            ))}
+          </div>
+          {urls.length < 5 && <button style={{ ...s.btnSecondary, marginTop: 8 }} onClick={() => setUrls(prev => [...prev, ""])}>{t.addLink}</button>}
+          {error && <div style={s.errorBox}>{error}</div>}
+          <button style={s.btn} onClick={analyze}>{t.analyze}</button>
+          <p style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginTop: 7, fontStyle: "italic" }}>{t.analyzingSub}</p>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div>
+          {loading && (
+            <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
+              <div style={s.loader} />
+              <p style={{ fontFamily: "Georgia, serif", fontSize: 17, fontStyle: "italic", marginBottom: 10 }}>
+                {t.analyzing} {progress.current} {t.of} {progress.total}…
+              </p>
+              <div style={s.progressBg}><div style={s.progressBar(pct)} /></div>
+              <p style={{ fontSize: 12, color: "#aaa", marginTop: 6 }}>{pct}%</p>
+            </div>
+          )}
+          {!loading && error && <><div style={s.errorBox}>{error}</div><button style={s.restartBtn} onClick={restart}>{t.restart}</button></>}
+          {!loading && results && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(numResults, 3)}, 1fr)`, gap: 24, alignItems: "start" }}>
+                {results.map((r, ri) => (
+                  <div key={ri} style={s.restaurantSection}>
+                    <p style={s.restaurantTitle}>{getRestaurantName(r)}</p>
+                    {r.error && <div style={s.warnBox}>⚠ {r.error}</div>}
+                    {!r.error && (r.platos || []).slice(0, 3).map((p, i) => renderDishCard(p, i))}
+                  </div>
+                ))}
+              </div>
+              <button style={s.restartBtn} onClick={restart}>{t.restart}</button>
+            </>
+          )}
+        </div>
+      )}
+      </>}
+    </div>
+  );
+}
