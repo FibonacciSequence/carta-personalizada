@@ -150,6 +150,22 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     }
   }, []);
 
+  const filtered = restaurants.filter(r => {
+    if (!search.trim()) return true;
+    const name = r.displayName?.text?.toLowerCase() || "";
+    const addr = r.formattedAddress?.toLowerCase() || "";
+    return name.includes(search.toLowerCase()) || addr.includes(search.toLowerCase());
+  });
+
+  const handleAnalyze = (r) => {
+    const name = r.displayName?.text || "restaurante";
+    // Clean URL - take only the first URL if multiple are concatenated
+    let url = (r.websiteUri || "").trim().split(/\s+/)[0];
+    // Remove trailing slashes and clean up
+    url = url.replace(/\s/g, "").split("https://").filter(Boolean).map((u, i) => i === 0 ? "https://" + u : u)[0] || "";
+    if (onAnalyze) onAnalyze({ name, url, prefs });
+  };
+
   useEffect(() => { fetchPlaces("todos"); }, []);
 
   useEffect(() => {
@@ -199,21 +215,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     });
   }, [filtered, mapLoaded]);
 
-  const filtered = restaurants.filter(r => {
-    if (!search.trim()) return true;
-    const name = r.displayName?.text?.toLowerCase() || "";
-    const addr = r.formattedAddress?.toLowerCase() || "";
-    return name.includes(search.toLowerCase()) || addr.includes(search.toLowerCase());
-  });
 
-  const handleAnalyze = (r) => {
-    const name = r.displayName?.text || "restaurante";
-    // Clean URL - take only the first URL if multiple are concatenated
-    let url = (r.websiteUri || "").trim().split(/\s+/)[0];
-    // Remove trailing slashes and clean up
-    url = url.replace(/\s/g, "").split("https://").filter(Boolean).map((u, i) => i === 0 ? "https://" + u : u)[0] || "";
-    if (onAnalyze) onAnalyze({ name, url, prefs });
-  };
 
   // Dark theme colors
   const bg = "#0e0e0e";
