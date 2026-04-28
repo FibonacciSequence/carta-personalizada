@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 function getInitials(name) {
   const words = name.trim().split(/\s+/).filter(w => !["el", "la", "los", "las", "de", "del", "restaurant", "restaurante"].includes(w.toLowerCase()));
@@ -127,6 +127,10 @@ export default function Discover({ onAnalyze, lang = "es" }) {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState("");
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = React.useRef(null);
+  const googleMapRef = React.useRef(null);
+  const markersRef = React.useRef([]);
 
   const fetchPlaces = useCallback(async (filterId) => {
     setLoading(true);
@@ -147,6 +151,53 @@ export default function Discover({ onAnalyze, lang = "es" }) {
   }, []);
 
   useEffect(() => { fetchPlaces("todos"); }, []);
+
+  useEffect(() => {
+    if (mapLoaded || typeof window === "undefined") return;
+    fetch("/api/maps-key").then(r => r.json()).then(({ key }) => {
+      if (!key) return;
+      window.initMap = () => {
+        if (!mapRef.current) return;
+        googleMapRef.current = new window.google.maps.Map(mapRef.current, {
+          center: { lat: -12.0464, lng: -77.0428 },
+          zoom: 12,
+          styles: [
+            { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#0e0e0e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#2a2a2a" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#111" }] },
+            { featureType: "poi", stylers: [{ visibility: "off" }] },
+          ],
+        });
+        setMapLoaded(true);
+      };
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMap`;
+      script.async = true;
+      document.head.appendChild(script);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!googleMapRef.current || !window.google) return;
+    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current = [];
+    filtered.forEach(r => {
+      const loc = r.location;
+      if (!loc) return;
+      const marker = new window.google.maps.Marker({
+        position: { lat: loc.latitude, lng: loc.longitude },
+        map: googleMapRef.current,
+        title: r.displayName?.text || "",
+        icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#ef9f27", fillOpacity: 1, strokeColor: "#0e0e0e", strokeWeight: 2 },
+      });
+      marker.addListener("click", () => {
+        handleAnalyze(r);
+      });
+      markersRef.current.push(marker);
+    });
+  }, [filtered, mapLoaded]);
 
   const filtered = restaurants.filter(r => {
     if (!search.trim()) return true;
@@ -172,6 +223,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
   const textSecondary = "#909090";
   const textMuted = "#505050";
 
+  const [mobileTab, setMobileTab] = useState("list"); // list | map
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
@@ -179,6 +231,12 @@ export default function Discover({ onAnalyze, lang = "es" }) {
       
       {/* Left — restaurant list */}
       <div style={{ flex: isMobile ? "none" : "0 0 60%", overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "1rem" : "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
+        {isMobile && (
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginBottom: "1rem" }}>
+            <button onClick={() => setMobileTab("list")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "list" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "list" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "List" : "Lista"}</button>
+            <button onClick={() => setMobileTab("map")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "map" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "map" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "Map" : "Mapa"}</button>
+          </div>
+        )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
           <span style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, color: textPrimary }}>
             {activeFilter === "todos" ? (lang === "en" ? "Restaurants in Lima" : "Restaurantes en Lima") : FILTERS.find(f => f.id === activeFilter)?.label + (lang === "en" ? " in Lima" : " en Lima")}
@@ -186,7 +244,10 @@ export default function Discover({ onAnalyze, lang = "es" }) {
           <span style={{ fontSize: 12, color: textMuted }}>{filtered.length} resultados</span>
         </div>
 
-        {loading && <div style={{ textAlign: "center", padding: "3rem", color: textMuted, fontSize: 13, fontStyle: "italic" }}>Buscando restaurantes…</div>}
+        {isMobile && mobileTab === "map" && (
+          <div ref={mapRef} style={{ height: "calc(100vh - 200px)", borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
+        )}
+        {(!isMobile || mobileTab === "list") && loading && <div style={{ textAlign: "center", padding: "3rem", color: textMuted, fontSize: 13, fontStyle: "italic" }}>Buscando restaurantes…</div>}
         {error && <div style={{ padding: "11px 13px", background: "#2a0f0f", border: "0.5px solid #5a1f1f", borderRadius: 8, color: "#f08080", fontSize: 13 }}>{error}</div>}
 
         {!loading && !error && (
