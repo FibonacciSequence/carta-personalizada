@@ -363,10 +363,14 @@ export default function Discover({ onAnalyze, lang = "es" }) {
 
         <button
           onClick={() => { if (selected !== null && filtered[selected]) handleAnalyze(filtered[selected]); }}
-          style={{ width: "100%", padding: "12px", background: textPrimary, color: bg, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: 500, cursor: "pointer", marginTop: "auto", letterSpacing: "0.02em" }}
+          style={{ width: "100%", padding: "12px", background: textPrimary, color: bg, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: 500, cursor: "pointer", letterSpacing: "0.02em" }}
         >
-          Analizar carta seleccionada →
+          {lang === "en" ? "Analyze selected menu →" : "Analizar carta seleccionada →"}
         </button>
+
+        {!isMobile && (
+          <div ref={mapRef} style={{ flex: 1, minHeight: 240, borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
+        )}
       </div>
     </div>
   );
