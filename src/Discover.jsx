@@ -132,11 +132,13 @@ export default function Discover({ onAnalyze }) {
   const textSecondary = "#909090";
   const textMuted = "#505050";
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 41px)", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: bg, color: textPrimary }}>
+    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", height: isMobile ? "auto" : "calc(100vh - 41px)", minHeight: "100vh", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: bg, color: textPrimary }}>
       
       {/* Left — restaurant list */}
-      <div style={{ flex: "0 0 60%", overflowY: "auto", padding: "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
+      <div style={{ flex: isMobile ? "none" : "0 0 60%", overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "1rem" : "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
           <span style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, color: textPrimary }}>
             {activeFilter === "todos" ? "Restaurantes en Lima" : FILTERS.find(f => f.id === activeFilter)?.label + " en Lima"}
@@ -212,7 +214,7 @@ export default function Discover({ onAnalyze }) {
       </div>
 
       {/* Right — filters panel */}
-      <div style={{ width: "40%", minWidth: 320, maxWidth: 480, flexShrink: 0, borderLeft: `0.5px solid ${border}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
+      <div style={{ width: isMobile ? "100%" : "40%", minWidth: isMobile ? "auto" : 320, maxWidth: isMobile ? "none" : 480, flexShrink: 0, borderLeft: isMobile ? "none" : `0.5px solid ${border}`, borderTop: isMobile ? `0.5px solid ${border}` : "none", padding: isMobile ? "1rem" : "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
         <div>
           <div style={{ fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>Lima Eats</div>
           <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>Tu menú a medida</div>
