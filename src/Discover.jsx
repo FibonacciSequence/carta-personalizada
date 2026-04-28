@@ -222,7 +222,7 @@ export default function Discover({ onAnalyze }) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: 8 }}>Mis preferencias</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Mis preferencias</div>
           <textarea
             value={prefs}
             onChange={e => setPrefs(e.target.value)}
@@ -232,7 +232,7 @@ export default function Discover({ onAnalyze }) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: 8 }}>Tipo de restaurante</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Tipo de restaurante</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {FILTERS.map(f => (
               <button
@@ -247,7 +247,7 @@ export default function Discover({ onAnalyze }) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: textMuted, marginBottom: 8 }}>Buscar</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Buscar</div>
           <input
             type="text"
             placeholder="Restaurante o distrito..."
