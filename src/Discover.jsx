@@ -1,5 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
 
+function getInitials(name) {
+  const words = name.trim().split(/\s+/).filter(w => !["el", "la", "los", "las", "de", "del", "restaurant", "restaurante"].includes(w.toLowerCase()));
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name) {
+  const colors = [
+    { bg: "#1a1025", color: "#9f7fef" },
+    { bg: "#0f1e2a", color: "#4c9fef" },
+    { bg: "#0f2a1a", color: "#4caf80" },
+    { bg: "#2a1010", color: "#ef7f6f" },
+    { bg: "#1a1a10", color: "#cfaf40" },
+    { bg: "#1a0f18", color: "#cf6faf" },
+    { bg: "#0f2a28", color: "#4fcfbf" },
+    { bg: "#201510", color: "#df9f50" },
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
 const FILTERS = [
   { id: "todos", label: "Todos", query: "restaurantes Lima Peru" },
   { id: "top50", label: "Top 50 Lat.", query: "mejores restaurantes Lima Peru gourmet fine dining" },
@@ -175,9 +197,10 @@ export default function Discover({ onAnalyze }) {
               const price = PRICE_MAP[r.priceLevel] || "";
               const rating = r.rating?.toFixed(1) || "";
               const labels = getLabels(r);
-              const emoji = getEmoji(r);
               const top50 = isTop50(r);
               const isSel = selected === i;
+              const initials = getInitials(name);
+              const avatarColor = getAvatarColor(name);
 
               return (
                 <div
@@ -194,8 +217,8 @@ export default function Discover({ onAnalyze }) {
                     transition: "all 0.15s",
                   }}
                 >
-                  <div style={{ width: 48, height: 48, borderRadius: 10, background: "#1c1c1c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
-                    {emoji}
+                  <div style={{ width: 48, height: 48, borderRadius: 10, background: avatarColor.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, flexShrink: 0, color: avatarColor.color, letterSpacing: "0.02em" }}>
+                    {initials}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
