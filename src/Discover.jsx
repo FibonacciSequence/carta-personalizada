@@ -201,9 +201,12 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     markersRef.current = [];
     filtered.forEach(r => {
       const loc = r.location;
-      if (!loc) return;
+      if (!loc?.latitude && !loc?.lat) return;
+      const lat = loc.latitude ?? loc.lat;
+      const lng = loc.longitude ?? loc.lng;
+      if (!lat || !lng) return;
       const marker = new window.google.maps.Marker({
-        position: { lat: loc.latitude, lng: loc.longitude },
+        position: { lat, lng },
         map: googleMapRef.current,
         title: r.displayName?.text || "",
         icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#ef9f27", fillOpacity: 1, strokeColor: "#0e0e0e", strokeWeight: 2 },
@@ -213,7 +216,14 @@ export default function Discover({ onAnalyze, lang = "es" }) {
       });
       markersRef.current.push(marker);
     });
-  }, [filtered, mapLoaded]);
+    // Fit map to show all markers
+    if (markersRef.current.length > 0 && googleMapRef.current) {
+      const bounds = new window.google.maps.LatLngBounds();
+      markersRef.current.forEach(m => bounds.extend(m.getPosition()));
+      googleMapRef.current.fitBounds(bounds);
+      if (markersRef.current.length === 1) googleMapRef.current.setZoom(15);
+    }
+  }, [restaurants, search, mapLoaded]);
 
 
 
