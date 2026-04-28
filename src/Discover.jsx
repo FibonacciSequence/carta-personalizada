@@ -117,7 +117,10 @@ export default function Discover({ onAnalyze }) {
 
   const handleAnalyze = (r) => {
     const name = r.displayName?.text || "restaurante";
-    const url = r.websiteUri || "";
+    // Clean URL - take only the first URL if multiple are concatenated
+    let url = (r.websiteUri || "").trim().split(/\s+/)[0];
+    // Remove trailing slashes and clean up
+    url = url.replace(/\s/g, "").split("https://").filter(Boolean).map((u, i) => i === 0 ? "https://" + u : u)[0] || "";
     if (onAnalyze) onAnalyze({ name, url, prefs });
   };
 
@@ -209,7 +212,7 @@ export default function Discover({ onAnalyze }) {
       </div>
 
       {/* Right — filters panel */}
-      <div style={{ width: "40%", minWidth: 320, maxWidth: 480, flexShrink: 0, borderLeft: `0.5px solid ${border}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto" }}>
+      <div style={{ width: "40%", minWidth: 320, maxWidth: 480, flexShrink: 0, borderLeft: `0.5px solid ${border}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
         <div>
           <div style={{ fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>Lima Eats</div>
           <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>Tu menú a medida</div>
