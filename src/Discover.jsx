@@ -122,18 +122,18 @@ export default function Discover({ onAnalyze }) {
   };
 
   // Dark theme colors
-  const bg = "#111";
-  const surface = "#1a1a1a";
-  const border = "rgba(255,255,255,0.08)";
-  const textPrimary = "#f0f0f0";
-  const textSecondary = "#888";
-  const textMuted = "#555";
+  const bg = "#0e0e0e";
+  const surface = "#181818";
+  const border = "rgba(255,255,255,0.1)";
+  const textPrimary = "#efefef";
+  const textSecondary = "#909090";
+  const textMuted = "#505050";
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 45px)", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: bg, color: textPrimary }}>
+    <div style={{ display: "flex", height: "calc(100vh - 41px)", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: bg, color: textPrimary }}>
       
       {/* Left — restaurant list */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
+      <div style={{ flex: "0 0 60%", overflowY: "auto", padding: "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
           <span style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, color: textPrimary }}>
             {activeFilter === "todos" ? "Restaurantes en Lima" : FILTERS.find(f => f.id === activeFilter)?.label + " en Lima"}
@@ -209,9 +209,9 @@ export default function Discover({ onAnalyze }) {
       </div>
 
       {/* Right — filters panel */}
-      <div style={{ width: 280, flexShrink: 0, borderLeft: `0.5px solid ${border}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto" }}>
+      <div style={{ width: "40%", minWidth: 320, maxWidth: 480, flexShrink: 0, borderLeft: `0.5px solid ${border}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto" }}>
         <div>
-          <div style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>Lima Eats</div>
+          <div style={{ fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>Lima Eats</div>
           <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>Tu menú a medida</div>
           <div style={{ width: 28, height: 1, background: border, margin: "0.5rem 0" }} />
         </div>
@@ -222,7 +222,7 @@ export default function Discover({ onAnalyze }) {
             value={prefs}
             onChange={e => setPrefs(e.target.value)}
             placeholder="Ej: No como gluten, lactosa ni cerdo. Evito alimentos altos en histaminas..."
-            style={{ width: "100%", minHeight: 80, padding: "9px 11px", border: `0.5px solid ${border}`, borderRadius: 10, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "none", color: textPrimary, background: surface, outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", minHeight: 90, padding: "12px", border: `0.5px solid ${border}`, borderRadius: 10, fontFamily: "inherit", fontSize: 13, lineHeight: 1.6, resize: "none", color: textSecondary, background: "#111", outline: "none", boxSizing: "border-box", fontStyle: "italic" }}
           />
         </div>
 
@@ -248,13 +248,13 @@ export default function Discover({ onAnalyze }) {
             placeholder="Restaurante o distrito..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: "100%", padding: "8px 11px", border: `0.5px solid ${border}`, borderRadius: 10, fontSize: 12, color: textPrimary, background: surface, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "10px 12px", border: `0.5px solid ${border}`, borderRadius: 10, fontSize: 13, color: textSecondary, background: "#111", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
           />
         </div>
 
         <button
           onClick={() => { if (selected !== null && filtered[selected]) handleAnalyze(filtered[selected]); }}
-          style={{ width: "100%", padding: "10px", background: textPrimary, color: bg, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: 500, cursor: "pointer", marginTop: "auto" }}
+          style={{ width: "100%", padding: "12px", background: textPrimary, color: bg, border: "none", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: 500, cursor: "pointer", marginTop: "auto", letterSpacing: "0.02em" }}
         >
           Analizar carta seleccionada →
         </button>
