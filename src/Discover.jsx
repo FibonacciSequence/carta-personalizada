@@ -181,7 +181,7 @@ export default function Discover({ onAnalyze }) {
       <div style={{ flex: isMobile ? "none" : "0 0 60%", overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "1rem" : "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
           <span style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, color: textPrimary }}>
-            {activeFilter === "todos" ? "Restaurantes en Lima" : FILTERS.find(f => f.id === activeFilter)?.label + " en Lima"}
+            {activeFilter === "todos" ? (lang === "en" ? "Restaurants in Lima" : "Restaurantes en Lima") : FILTERS.find(f => f.id === activeFilter)?.label + (lang === "en" ? " in Lima" : " en Lima")}
           </span>
           <span style={{ fontSize: 12, color: textMuted }}>{filtered.length} resultados</span>
         </div>
@@ -257,23 +257,23 @@ export default function Discover({ onAnalyze }) {
       {/* Right — filters panel */}
       <div style={{ width: isMobile ? "100%" : "40%", minWidth: isMobile ? "auto" : 320, maxWidth: isMobile ? "none" : 480, flexShrink: 0, borderLeft: isMobile ? "none" : `0.5px solid ${border}`, borderTop: isMobile ? `0.5px solid ${border}` : "none", padding: isMobile ? "1rem" : "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
         <div>
-          <div style={{ fontFamily: "Georgia,serif", fontSize: 22, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>Lima Eats</div>
-          <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>Tu menú a medida</div>
+          <div style={{ fontFamily: "Georgia,serif", fontSize: 18, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>La Carta Personalizada</div>
+          <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>{lang === "en" ? "Your menu, your way" : "Tu menú a medida"}</div>
           <div style={{ width: 28, height: 1, background: border, margin: "0.5rem 0" }} />
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Mis preferencias</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>{lang === "en" ? "My preferences" : "Mis preferencias"}</div>
           <textarea
             value={prefs}
             onChange={e => setPrefs(e.target.value)}
-            placeholder="Ej: No como gluten, lactosa ni cerdo. Evito alimentos altos en histaminas..."
+            placeholder={lang === "en" ? "E.g.: No gluten, lactose or pork. I avoid high-histamine foods..." : "Ej: No como gluten, lactosa ni cerdo. Evito alimentos altos en histaminas..."}
             style={{ width: "100%", minHeight: 90, padding: "12px", border: `0.5px solid ${border}`, borderRadius: 10, fontFamily: "inherit", fontSize: 13, lineHeight: 1.6, resize: "none", color: textSecondary, background: "#111", outline: "none", boxSizing: "border-box", fontStyle: "italic" }}
           />
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Tipo de restaurante</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>{lang === "en" ? "Restaurant type" : "Tipo de restaurante"}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {FILTERS.map(f => (
               <button
@@ -288,10 +288,10 @@ export default function Discover({ onAnalyze }) {
         </div>
 
         <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>Buscar</div>
+          <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>{lang === "en" ? "Search" : "Buscar"}</div>
           <input
             type="text"
-            placeholder="Restaurante o distrito..."
+            placeholder={lang === "en" ? "Restaurant or district..." : "Restaurante o distrito..."}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: "100%", padding: "10px 12px", border: `0.5px solid ${border}`, borderRadius: 10, fontSize: 13, color: textSecondary, background: "#111", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
