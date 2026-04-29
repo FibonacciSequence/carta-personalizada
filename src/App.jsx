@@ -142,7 +142,6 @@ function AppInner({ lang, setLang, tool, setTool }) {
   const [dragging, setDragging] = useState(false);
   const [history, setHistory] = useState([]);
   const [pendingRestaurant, setPendingRestaurant] = useState("");
-  const [pendingPlaceId, setPendingPlaceId] = useState(null);
   const numResults = results.length;
 
   const s = {
@@ -257,16 +256,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
     }
   };
 
-  const confirmMenu = async (placeId, restaurantName) => {
-    if (!placeId) return;
-    await fetch("/api/menu-confirm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placeId, restaurantName }),
-    }).catch(() => {});
-  };
-
-  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPrefs(""); setPendingRestaurant(""); setPendingPlaceId(null); };
+  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPrefs(""); setPendingRestaurant(""); };
 
   const analyze = async () => {
     const validFiles = files.filter(f => f);
@@ -289,10 +279,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: file.name });
-        if (!result.error && result.platos?.length > 0) {
-          await saveAnalysis(result, file.name, "file");
-          await confirmMenu(pendingPlaceId, result.restaurante);
-        }
+        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, file.name, "file");
       } catch (e) {
         newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: file.name });
       }
@@ -309,10 +296,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages, 1, url, pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: url });
-        if (!result.error && result.platos?.length > 0) {
-          await saveAnalysis(result, url, "url");
-          await confirmMenu(pendingPlaceId, result.restaurante);
-        }
+        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
       } catch (e) {
         newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: url });
       }
@@ -324,13 +308,14 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, "", lang) }];
         const result = await analyzeOne(messages, 1, "", pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
+        if (!result.restaurante) result.restaurante = pendingRestaurant;
         newResults.push({ ...result, source: pendingRestaurant });
-        if (!result.error && result.platos?.length > 0) {
-          await saveAnalysis(result, pendingRestaurant, "scrape");
-          await confirmMenu(pendingPlaceId, result.restaurante);
-        }
+        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, pendingRestaurant, "scrape");
       } catch (e) {
-        newResults.push({ restaurante: pendingRestaurant, platos: [], error: e.message || t.fileError, source: pendingRestaurant });
+        const noMenuMsg = lang === "es"
+          ? "No encontramos la carta online. Sube una foto o PDF de la carta, o busca el link en Google."
+          : "Menu not found online. Upload a photo or PDF, or find the link on Google.";
+        newResults.push({ restaurante: pendingRestaurant, platos: [], error: noMenuMsg, source: pendingRestaurant });
       }
     }
 
@@ -419,13 +404,12 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
           </div>
         </div>
-        <Discover lang={lang} onAnalyze={({ name, url, prefs: p, placeId }) => {
+        <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
           if (p) setPrefs(p);
           setUrls([url || ""]);
           setFiles([]);
           setStep(2);
           setPendingRestaurant(name);
-          setPendingPlaceId(placeId || null);
           setTool("carta");
         }} />
       </div>
