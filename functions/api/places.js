@@ -22,10 +22,10 @@ export async function onRequestGet(context) {
     textQuery: query,
     languageCode: "es",
     maxResultCount: 20,
-    locationRestriction: {
+    locationBias: {
       circle: {
         center: { latitude: -12.0464, longitude: -77.0428 },
-        radius: 20000.0,
+        radius: 15000.0,
       },
     },
   };

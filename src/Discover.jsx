@@ -152,10 +152,12 @@ export default function Discover({ onAnalyze, lang = "es" }) {
 
   const filtered = restaurants.filter(r => {
     if ((r.rating || 0) < 4.0) return false;
+    // Only show restaurants actually in Lima/Peru
+    const addr = r.formattedAddress || "";
+    if (!addr.toLowerCase().includes("lima") && !addr.toLowerCase().includes("perú") && !addr.toLowerCase().includes("peru")) return false;
     if (!search.trim()) return true;
     const name = r.displayName?.text?.toLowerCase() || "";
-    const addr = r.formattedAddress?.toLowerCase() || "";
-    return name.includes(search.toLowerCase()) || addr.includes(search.toLowerCase());
+    return name.includes(search.toLowerCase()) || addr.toLowerCase().includes(search.toLowerCase());
   });
 
   const handleAnalyze = (r) => {
