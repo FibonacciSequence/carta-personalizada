@@ -111,12 +111,15 @@ function buildUrlPrompt(prefs, url, lang) {
 }
 
 function cleanUrl(url) {
+  let u = url.trim();
+  // Fix duplicate protocol like https://http://
+  u = u.replace(/^https?:\/\/(https?:\/\/)/, "$1");
   try {
-    const u = new URL(url);
-    const q = u.searchParams.get("q") || u.searchParams.get("url");
+    const parsed = new URL(u);
+    const q = parsed.searchParams.get("q") || parsed.searchParams.get("url");
     if (q) return q;
   } catch {}
-  return url.trim();
+  return u;
 }
 
 function getUrlWarning(url, t) {
@@ -479,14 +482,9 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <>
               <h1 style={s.h1}>{pendingRestaurant}</h1>
               <p style={s.subtitle}>{lang === "es" ? "Sube la carta o agrega un link para analizar" : "Upload the menu or add a link to analyze"}</p>
-              <div style={{ display: "flex", gap: 8, marginBottom: "1.25rem", flexWrap: "wrap" }}>
-                <a href={`https://popular.cluvi.pe/popular/search?q=${encodeURIComponent(pendingRestaurant)}`} target="_blank" rel="noopener noreferrer" style={{ ...s.addUrl, textDecoration: "none", display: "inline-block" }}>
-                  🔍 {lang === "es" ? "Buscar en Cluvi" : "Search on Cluvi"}
-                </a>
-                <a href={`https://www.google.com/search?q=${encodeURIComponent(pendingRestaurant + " Lima carta menu")}`} target="_blank" rel="noopener noreferrer" style={{ ...s.addUrl, textDecoration: "none", display: "inline-block" }}>
-                  🌐 {lang === "es" ? "Buscar en Google" : "Search on Google"}
-                </a>
-              </div>
+              <a href={`https://www.google.com/search?q=${encodeURIComponent(pendingRestaurant + " Lima carta menu")}`} target="_blank" rel="noopener noreferrer" style={{ ...s.addUrl, textDecoration: "none", display: "inline-block", marginBottom: "1.25rem" }}>
+                🌐 {lang === "es" ? "Buscar carta en Google" : "Search menu on Google"}
+              </a>
             </>
           ) : (
             <>
