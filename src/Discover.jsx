@@ -173,6 +173,12 @@ export default function Discover({ onAnalyze, lang = "es" }) {
 
   useEffect(() => {
     if (mapLoaded || typeof window === "undefined") return;
+    // Don't load script if already loaded
+    if (window.google?.maps) {
+      window.initMap && window.initMap();
+      return;
+    }
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) return;
     fetch("/api/maps-key").then(r => r.json()).then(({ key }) => {
       if (!key) return;
       window.initMap = () => {

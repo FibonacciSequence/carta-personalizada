@@ -257,8 +257,10 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   const analyze = async () => {
     const validFiles = files.filter(f => f);
-    const validUrls = urls.map(u => cleanUrl(u)).filter(u => u.trim());
-    if (validFiles.length === 0 && validUrls.length === 0) return;
+    const validUrls = urls.map(u => cleanUrl(u)).filter(u => u.trim() && !/instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/.test(u));
+    // If no valid files/urls but we have a restaurant name, try scraping by name
+    const shouldScrapeByName = validFiles.length === 0 && validUrls.length === 0 && pendingRestaurant;
+    if (validFiles.length === 0 && validUrls.length === 0 && !shouldScrapeByName) return;
     setLoading(true);
     setStep(3);
     const newResults = [];
@@ -294,6 +296,19 @@ function AppInner({ lang, setLang, tool, setTool }) {
         if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
       } catch (e) {
         newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: url });
+      }
+    }
+
+    // If no files/urls but have restaurant name, trigger scraper via analyze
+    if (shouldScrapeByName) {
+      try {
+        const messages = [{ role: "user", content: buildUrlPrompt(prefs, "", lang) }];
+        const result = await analyzeOne(messages, 1, "", pendingRestaurant);
+        if (result.not_menu) result.error = t.notMenu;
+        newResults.push({ ...result, source: pendingRestaurant });
+        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, pendingRestaurant, "scrape");
+      } catch (e) {
+        newResults.push({ restaurante: pendingRestaurant, platos: [], error: e.message || t.fileError, source: pendingRestaurant });
       }
     }
 
