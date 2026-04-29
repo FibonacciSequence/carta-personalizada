@@ -22,8 +22,8 @@ export async function onRequestPost(context) {
 
     let finalMessages = messages;
 
-    // If URL provided and it's a text message (not file), try to scrape first
-    if (restaurant_url && messages?.length > 0) {
+    // If URL or name provided and it's a text message (not file), try to scrape first
+    if ((restaurant_url || restaurant_name) && messages?.length > 0) {
       const lastMsg = messages[messages.length - 1];
       const isTextOnly = Array.isArray(lastMsg?.content)
         ? lastMsg.content.every(c => c.type === "text")
@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
           const scrapeRes = await fetch(`${new URL(context.request.url).origin}/api/scrape`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: restaurant_url, name: restaurant_name }),
+            body: JSON.stringify({ url: restaurant_url || "", name: restaurant_name || "" }),
           });
 
           if (scrapeRes.ok) {
