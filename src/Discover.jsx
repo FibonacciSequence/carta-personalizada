@@ -172,31 +172,35 @@ export default function Discover({ onAnalyze, lang = "es" }) {
 
   useEffect(() => {
     if (mapLoaded || typeof window === "undefined") return;
-    // Don't load script if already loaded
+
+    const createMap = () => {
+      const container = document.getElementById("gmap-container");
+      if (!container || !window.google?.maps) return;
+      googleMapRef.current = new window.google.maps.Map(container, {
+        center: { lat: -12.0464, lng: -77.0428 },
+        zoom: 12,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#0e0e0e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#2a2a2a" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#111" }] },
+          { featureType: "poi", stylers: [{ visibility: "off" }] },
+        ],
+      });
+      setMapLoaded(true);
+    };
+
     if (window.google?.maps) {
-      window.initMap && window.initMap();
+      createMap();
       return;
     }
+
     if (document.querySelector('script[src*="maps.googleapis.com"]')) return;
+
     fetch("/api/maps-key").then(r => r.json()).then(({ key }) => {
       if (!key) return;
-      window.initMap = () => {
-        const container = document.getElementById("gmap-container");
-        if (!container) return;
-        googleMapRef.current = new window.google.maps.Map(container, {
-          center: { lat: -12.0464, lng: -77.0428 },
-          zoom: 12,
-          styles: [
-            { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
-            { elementType: "labels.text.stroke", stylers: [{ color: "#0e0e0e" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
-            { featureType: "road", elementType: "geometry", stylers: [{ color: "#2a2a2a" }] },
-            { featureType: "water", elementType: "geometry", stylers: [{ color: "#111" }] },
-            { featureType: "poi", stylers: [{ visibility: "off" }] },
-          ],
-        });
-        setMapLoaded(true);
-      };
+      window.initMap = createMap;
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMap`;
       script.async = true;
