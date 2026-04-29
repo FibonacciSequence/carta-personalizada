@@ -314,7 +314,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
           await confirmMenu(pendingPlaceId, result.restaurante);
         }
       } catch (e) {
-        newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: url });
+        newResults.push({ restaurante: "No disponible", platos: [], error: t.notMenu, source: url, displayName: pendingRestaurant });
       }
     }
 
