@@ -518,7 +518,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
           )}
 
           <button style={s.btn} onClick={analyze}
-            disabled={files.length === 0 && urls.every(u => !u.trim())}>
+            disabled={files.length === 0 && urls.every(u => !u.trim()) && !pendingRestaurant}>
             {loading ? <><span style={s.spinner} />{t.analysing}</> : t.analyze}
           </button>
           {loading && <p style={s.analysing}>{t.analysing}</p>}
