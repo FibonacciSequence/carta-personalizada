@@ -18,7 +18,7 @@ export async function onRequestPost(context) {
 
   try {
     const body = await context.request.json();
-    const { model, max_tokens, messages, restaurant_url, restaurant_name } = body;
+    const { model, max_tokens, messages, restaurant_url, restaurant_name, restaurant_place_id } = body;
 
     let finalMessages = messages;
 
@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
           const scrapeRes = await fetch(`${new URL(context.request.url).origin}/api/scrape`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: restaurant_url || "", name: restaurant_name || "" }),
+            body: JSON.stringify({ url: restaurant_url || "", name: restaurant_name || "", placeId: restaurant_place_id || "" }),
           });
 
           if (scrapeRes.ok) {

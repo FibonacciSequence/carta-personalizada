@@ -2,8 +2,9 @@ export async function onRequestPost(context) {
   const apiKey = context.env.BROWSERLESS_API_KEY;
   if (!apiKey) return new Response(JSON.stringify({ error: "not configured" }), { status: 500 });
 
-  const { url, name } = await context.request.json();
+  const { url, name, placeId } = await context.request.json();
   if (!url && !name) return new Response(JSON.stringify({ error: "url or name required" }), { status: 400 });
+  const googleApiKey = context.env.GOOGLE_PLACES_API_KEY;
 
   const MENU_KEYWORDS = ["carta", "menu", "menú", "food", "platos", "dishes", "comida", "almuerzo", "cena", "desayuno", "bebidas", "drinks"];
 
@@ -101,6 +102,72 @@ export async function onRequestPost(context) {
       }
     } catch (e) {
       console.error("Cluvi search failed:", e.message);
+    }
+  }
+
+  // Try Rappi Peru search by name
+  if (name) {
+    try {
+      const rappiSearch = `https://www.rappi.com.pe/restaurantes?searchterm=${encodeURIComponent(name)}`;
+      const rappiHtml = await scrapeText(rappiSearch);
+      // Find restaurant slug from search results
+      const slugMatch = rappiHtml.match(/href="\/restaurantes\/([^"?]+)"/);
+      if (slugMatch) {
+        const rappiUrl = `https://www.rappi.com.pe/restaurantes/${slugMatch[1]}`;
+        const menuHtml = await scrapeText(rappiUrl);
+        const menuText = htmlToText(menuHtml);
+        if (menuText.length > 300) {
+          return new Response(JSON.stringify({ text: menuText, source: "rappi", url: rappiUrl }), {
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Rappi search failed:", e.message);
+    }
+  }
+
+  // Last resort: use Place Details API to find any menu/order links Google has for this place
+  if (placeId && googleApiKey) {
+    try {
+      const detailsRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+        headers: {
+          "X-Goog-Api-Key": googleApiKey,
+          "X-Goog-FieldMask": "websiteUri,reservationLinks",
+        },
+      });
+      const details = await detailsRes.json();
+
+      // Try websiteUri from Place Details (may differ from what we already tried)
+      if (details.websiteUri && details.websiteUri !== url) {
+        try {
+          const html = await scrapeText(details.websiteUri);
+          const text = htmlToText(html);
+          const lowerText = text.toLowerCase();
+          const menuWordCount = MENU_KEYWORDS.filter(k => lowerText.includes(k)).length;
+          if (menuWordCount >= 1 && text.length > 300) {
+            return new Response(JSON.stringify({ text, source: "place_details_website", url: details.websiteUri }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        } catch {}
+      }
+
+      // Try any reservation/order links (some point to menu platforms)
+      for (const link of (details.reservationLinks || [])) {
+        if (!link.uri) continue;
+        try {
+          const html = await scrapeText(link.uri);
+          const text = htmlToText(html);
+          if (text.length > 300) {
+            return new Response(JSON.stringify({ text, source: "place_details_link", url: link.uri }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        } catch {}
+      }
+    } catch (e) {
+      console.error("Place Details fallback failed:", e.message);
     }
   }
 
