@@ -235,11 +235,11 @@ function AppInner({ lang, setLang, tool, setTool }) {
     r.readAsDataURL(file);
   });
 
-  const analyzeOne = async (messages, attempt = 1) => {
+  const analyzeOne = async (messages, attempt = 1, restaurantUrl = "", restaurantName = "") => {
     const res = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1500, messages }),
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1500, messages, restaurant_url: restaurantUrl, restaurant_name: restaurantName }),
     });
     if (res.status === 429) { const d = await res.json(); throw new Error(d.error || "Rate limit"); }
     const data = await res.json();
@@ -283,7 +283,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
     for (const url of validUrls) {
       try {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
-        const result = await analyzeOne(messages);
+        const result = await analyzeOne(messages, 1, url, pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: url });
         if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
