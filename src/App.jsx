@@ -142,6 +142,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
   const [dragging, setDragging] = useState(false);
   const [history, setHistory] = useState([]);
   const [pendingRestaurant, setPendingRestaurant] = useState("");
+  const [pendingPlaceId, setPendingPlaceId] = useState(null);
   const numResults = results.length;
 
   const s = {
@@ -256,7 +257,16 @@ function AppInner({ lang, setLang, tool, setTool }) {
     }
   };
 
-  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPrefs(""); setPendingRestaurant(""); };
+  const confirmMenu = async (placeId, restaurantName) => {
+    if (!placeId) return;
+    await fetch("/api/menu-confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ placeId, restaurantName }),
+    }).catch(() => {});
+  };
+
+  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPrefs(""); setPendingRestaurant(""); setPendingPlaceId(null); };
 
   const analyze = async () => {
     const validFiles = files.filter(f => f);
@@ -279,7 +289,10 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: file.name });
-        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, file.name, "file");
+        if (!result.error && result.platos?.length > 0) {
+          await saveAnalysis(result, file.name, "file");
+          await confirmMenu(pendingPlaceId, result.restaurante);
+        }
       } catch (e) {
         newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: file.name });
       }
@@ -296,7 +309,10 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages, 1, url, pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: url });
-        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, url, "url");
+        if (!result.error && result.platos?.length > 0) {
+          await saveAnalysis(result, url, "url");
+          await confirmMenu(pendingPlaceId, result.restaurante);
+        }
       } catch (e) {
         newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: url });
       }
@@ -309,7 +325,10 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages, 1, "", pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
         newResults.push({ ...result, source: pendingRestaurant });
-        if (!result.error && result.platos?.length > 0) await saveAnalysis(result, pendingRestaurant, "scrape");
+        if (!result.error && result.platos?.length > 0) {
+          await saveAnalysis(result, pendingRestaurant, "scrape");
+          await confirmMenu(pendingPlaceId, result.restaurante);
+        }
       } catch (e) {
         newResults.push({ restaurante: pendingRestaurant, platos: [], error: e.message || t.fileError, source: pendingRestaurant });
       }
@@ -400,12 +419,13 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
           </div>
         </div>
-        <Discover lang={lang} onAnalyze={({ name, url, prefs: p }) => {
+        <Discover lang={lang} onAnalyze={({ name, url, prefs: p, placeId }) => {
           if (p) setPrefs(p);
           setUrls([url || ""]);
           setFiles([]);
           setStep(2);
           setPendingRestaurant(name);
+          setPendingPlaceId(placeId || null);
           setTool("carta");
         }} />
       </div>

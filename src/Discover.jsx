@@ -162,11 +162,9 @@ export default function Discover({ onAnalyze, lang = "es" }) {
 
   const handleAnalyze = (r) => {
     const name = r.displayName?.text || "restaurante";
-    // Clean URL - take only the first URL if multiple are concatenated
     let url = (r.websiteUri || "").trim().split(/\s+/)[0];
-    // Remove trailing slashes and clean up
     url = url.replace(/\s/g, "").split("https://").filter(Boolean).map((u, i) => i === 0 ? "https://" + u : u)[0] || "";
-    if (onAnalyze) onAnalyze({ name, url, prefs });
+    if (onAnalyze) onAnalyze({ name, url, prefs, placeId: r.id });
   };
 
   useEffect(() => { fetchPlaces("todos"); }, []);
@@ -307,7 +305,8 @@ export default function Discover({ onAnalyze, lang = "es" }) {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                         <span style={{ fontFamily: "Georgia,serif", fontSize: 15, fontWeight: 500, color: textPrimary, lineHeight: 1.2 }}>{name}</span>
-                        {top50 && <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 8, background: "#2a1f00", color: "#fab" , fontWeight: 500 }}>Top 50</span>}
+                        {top50 && <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 8, background: "#2a1f00", color: "#fab", fontWeight: 500 }}>Top 50</span>}
+                        {r.hasMenu && <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 8, background: "#0f2a1a", color: "#4caf80", fontWeight: 500 }}>Carta ✓</span>}
                       </div>
                       <span style={{ fontSize: 11, color: textMuted, flexShrink: 0, marginLeft: 8 }}>{price}</span>
                     </div>

@@ -46,6 +46,20 @@ export async function onRequestGet(context) {
     });
 
     const data = await response.json();
+    const places = data.places || [];
+    if (context.env.DB && places.length > 0) {
+      try {
+        const ids = places.map(p => p.id).filter(Boolean);
+        if (ids.length > 0) {
+          const placeholders = ids.map(() => "?").join(",");
+          const { results } = await context.env.DB.prepare(
+            `SELECT place_id FROM confirmed_menus WHERE place_id IN (${placeholders})`
+          ).bind(...ids).all();
+          const confirmed = new Set(results.map(r => r.place_id));
+          data.places = places.map(p => ({ ...p, hasMenu: confirmed.has(p.id) }));
+        }
+      } catch {}
+    }
     return new Response(JSON.stringify(data), {
       headers: { "Content-Type": "application/json" },
     });
