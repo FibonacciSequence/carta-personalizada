@@ -281,6 +281,11 @@ function AppInner({ lang, setLang, tool, setTool }) {
     }
 
     for (const url of validUrls) {
+      const isSocial = /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/.test(url);
+      if (isSocial) {
+        newResults.push({ restaurante: "No disponible", platos: [], error: lang === "es" ? "Las redes sociales no permiten acceso directo. Sube una foto de la carta." : "Social media doesn't allow direct access. Upload a photo of the menu.", source: url });
+        continue;
+      }
       try {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
         const result = await analyzeOne(messages, 1, url, pendingRestaurant);
