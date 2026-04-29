@@ -173,8 +173,9 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     fetch("/api/maps-key").then(r => r.json()).then(({ key }) => {
       if (!key) return;
       window.initMap = () => {
-        if (!mapRef.current) return;
-        googleMapRef.current = new window.google.maps.Map(mapRef.current, {
+        const container = document.getElementById("gmap-container");
+        if (!container) return;
+        googleMapRef.current = new window.google.maps.Map(container, {
           center: { lat: -12.0464, lng: -77.0428 },
           zoom: 12,
           styles: [
@@ -246,7 +247,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
         {isMobile && (
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginBottom: "1rem" }}>
             <button onClick={() => setMobileTab("list")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "list" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "list" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "List" : "Lista"}</button>
-            <button onClick={() => setMobileTab("map")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "map" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "map" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "Map" : "Mapa"}</button>
+            <button onClick={() => { setMobileTab("map"); setTimeout(() => { if (googleMapRef.current) window.google.maps.event.trigger(googleMapRef.current, "resize"); else window.initMap && window.initMap(); }, 100); }} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "map" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "map" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "Map" : "Mapa"}</button>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
@@ -257,7 +258,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
         </div>
 
         {isMobile && mobileTab === "map" && (
-          <div ref={mapRef} style={{ height: "calc(100vh - 200px)", borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
+          <div id="gmap-container" style={{ height: "calc(100vh - 200px)", borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
         )}
         {(!isMobile || mobileTab === "list") && loading && <div style={{ textAlign: "center", padding: "3rem", color: textMuted, fontSize: 13, fontStyle: "italic" }}>Buscando restaurantes…</div>}
         {error && <div style={{ padding: "11px 13px", background: "#2a0f0f", border: "0.5px solid #5a1f1f", borderRadius: 8, color: "#f08080", fontSize: 13 }}>{error}</div>}
@@ -379,7 +380,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
         </button>
 
         {!isMobile && (
-          <div ref={mapRef} style={{ flex: 1, minHeight: 240, borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
+          <div id="gmap-container" style={{ flex: 1, minHeight: 240, borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
         )}
       </div>
     </div>
