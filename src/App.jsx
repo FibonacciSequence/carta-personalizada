@@ -307,7 +307,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
       try {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
         const result = await analyzeOne(messages, 1, url, pendingRestaurant);
-        if (result.not_menu) result.error = t.notMenu;
+        if (result.not_menu || result.error) result.error = t.notMenu;
         newResults.push({ ...result, source: url, displayName: pendingRestaurant || result.restaurante });
         if (!result.error && result.platos?.length > 0) {
           await saveAnalysis(result, url, "url");
@@ -323,7 +323,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
       try {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, "", lang) }];
         const result = await analyzeOne(messages, 1, "", pendingRestaurant);
-        if (result.not_menu) result.error = t.notMenu;
+        if (result.not_menu || result.error) result.error = t.notMenu;
         if (!result.restaurante) result.restaurante = pendingRestaurant;
         newResults.push({ ...result, source: pendingRestaurant, displayName: pendingRestaurant || result.restaurante });
         if (!result.error && result.platos?.length > 0) {
