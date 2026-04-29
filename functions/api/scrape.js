@@ -5,35 +5,99 @@ export async function onRequestPost(context) {
   const { url, name } = await context.request.json();
   if (!url && !name) return new Response(JSON.stringify({ error: "url or name required" }), { status: 400 });
 
-  // Try URLs in order: original → Cluvi → OpenTable
-  const urlsToTry = [];
-  if (url) urlsToTry.push({ url, source: "original" });
-  if (name) {
-    const encoded = encodeURIComponent(name);
-    urlsToTry.push({ url: `https://www.opentable.com/s?term=${encoded}&covers=2&lang=es-PE`, source: "opentable" });
+  const MENU_KEYWORDS = ["carta", "menu", "menú", "food", "platos", "dishes", "comida", "almuerzo", "cena", "desayuno", "bebidas", "drinks"];
+
+  async function scrapeText(targetUrl) {
+    const res = await fetch(`https://production-sfo.browserless.io/content?token=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: targetUrl,
+        waitFor: 2000,
+        rejectResourceTypes: ["image", "font", "stylesheet"],
+      }),
+    });
+    if (!res.ok) throw new Error(`Browserless error: ${res.status}`);
+    return await res.text();
   }
 
-  for (const { url: targetUrl, source } of urlsToTry) {
+  function htmlToText(html) {
+    return html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 15000);
+  }
+
+  function findMenuLinks(html, baseUrl) {
+    const links = [];
+    const base = new URL(baseUrl);
+    const hrefRegex = /href=["']([^"']+)["']/gi;
+    let match;
+    while ((match = hrefRegex.exec(html)) !== null) {
+      const href = match[1];
+      try {
+        const full = href.startsWith("http") ? href : new URL(href, base).href;
+        const lower = full.toLowerCase();
+        if (MENU_KEYWORDS.some(k => lower.includes(k)) && full.includes(base.hostname)) {
+          links.push(full);
+        }
+      } catch {}
+    }
+    return [...new Set(links)].slice(0, 3);
+  }
+
+  // Try original URL first
+  if (url) {
     try {
-      const result = await scrapeWithBrowserless(targetUrl, apiKey);
-      if (result && result.length > 200) {
-        return new Response(JSON.stringify({ text: result, source, url: targetUrl }), {
+      const html = await scrapeText(url);
+      const text = htmlToText(html);
+
+      // If content looks like a menu (has food-related words), return it
+      const lowerText = text.toLowerCase();
+      const menuWordCount = MENU_KEYWORDS.filter(k => lowerText.includes(k)).length;
+
+      if (menuWordCount >= 2 && text.length > 500) {
+        return new Response(JSON.stringify({ text, source: "original", url }), {
           headers: { "Content-Type": "application/json" },
         });
       }
+
+      // Try to find menu subpage
+      const menuLinks = findMenuLinks(html, url);
+      for (const menuUrl of menuLinks) {
+        try {
+          const menuHtml = await scrapeText(menuUrl);
+          const menuText = htmlToText(menuHtml);
+          if (menuText.length > 300) {
+            return new Response(JSON.stringify({ text: menuText, source: "menu_page", url: menuUrl }), {
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        } catch {}
+      }
     } catch (e) {
-      console.error(`Failed to scrape ${targetUrl}:`, e.message);
+      console.error(`Failed to scrape ${url}:`, e.message);
     }
   }
 
-  // Try Cluvi search as last resort
+  // Try Cluvi search by name
   if (name) {
     try {
-      const cluvi = await searchCluvi(name, apiKey);
-      if (cluvi) {
-        return new Response(JSON.stringify({ text: cluvi.text, source: "cluvi", url: cluvi.url }), {
-          headers: { "Content-Type": "application/json" },
-        });
+      const searchUrl = `https://popular.cluvi.pe/popular/search?q=${encodeURIComponent(name)}`;
+      const searchHtml = await scrapeText(searchUrl);
+      const match = searchHtml.match(/maincategory_id=(\d+)/);
+      if (match) {
+        const menuUrl = `https://popular.cluvi.pe/popular/subcategories?maincategory_id=${match[1]}`;
+        const menuHtml = await scrapeText(menuUrl);
+        const menuText = htmlToText(menuHtml);
+        if (menuText.length > 200) {
+          return new Response(JSON.stringify({ text: menuText, source: "cluvi", url: menuUrl }), {
+            headers: { "Content-Type": "application/json" },
+          });
+        }
       }
     } catch (e) {
       console.error("Cluvi search failed:", e.message);
@@ -43,47 +107,4 @@ export async function onRequestPost(context) {
   return new Response(JSON.stringify({ error: "No menu found", text: null }), {
     status: 404, headers: { "Content-Type": "application/json" },
   });
-}
-
-async function scrapeWithBrowserless(url, apiKey) {
-  const res = await fetch(`https://production-sfo.browserless.io/content?token=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      url,
-      waitFor: 2000,
-      rejectResourceTypes: ["image", "font", "stylesheet"],
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Browserless error: ${res.status}`);
-  const html = await res.text();
-
-  // Extract text content - remove HTML tags and clean up
-  const text = html
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 15000); // Limit to 15k chars
-
-  return text;
-}
-
-async function searchCluvi(name, apiKey) {
-  // Search Cluvi for the restaurant
-  const searchUrl = `https://popular.cluvi.pe/popular/search?q=${encodeURIComponent(name)}`;
-  const html = await scrapeWithBrowserless(searchUrl, apiKey);
-  if (!html || html.length < 100) return null;
-
-  // Try to find the restaurant's Cluvi page
-  const match = html.match(/maincategory_id=(\d+)/);
-  if (!match) return null;
-
-  const menuUrl = `https://popular.cluvi.pe/popular/subcategories?maincategory_id=${match[1]}`;
-  const menuText = await scrapeWithBrowserless(menuUrl, apiKey);
-  if (!menuText || menuText.length < 200) return null;
-
-  return { text: menuText, url: menuUrl };
 }
