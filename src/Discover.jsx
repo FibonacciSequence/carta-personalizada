@@ -164,6 +164,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     const name = r.displayName?.text || "restaurante";
     let url = (r.websiteUri || "").trim().split(/\s+/)[0];
     url = url.replace(/\s/g, "").split("https://").filter(Boolean).map((u, i) => i === 0 ? "https://" + u : u)[0] || "";
+    url = url.replace(/(%20)+$/i, "").replace(/\s+$/, "");
     if (onAnalyze) onAnalyze({ name, url, prefs, placeId: r.id });
   };
 

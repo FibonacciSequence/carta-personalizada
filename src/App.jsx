@@ -288,7 +288,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const messages = [{ role: "user", content: [contentPart, { type: "text", text: buildPrompt(prefs, lang) }] }];
         const result = await analyzeOne(messages);
         if (result.not_menu) result.error = t.notMenu;
-        newResults.push({ ...result, source: file.name });
+        newResults.push({ ...result, source: file.name, displayName: result.restaurante || pendingRestaurant || file.name });
         if (!result.error && result.platos?.length > 0) {
           await saveAnalysis(result, file.name, "file");
           await confirmMenu(pendingPlaceId, result.restaurante);
@@ -308,7 +308,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const messages = [{ role: "user", content: buildUrlPrompt(prefs, url, lang) }];
         const result = await analyzeOne(messages, 1, url, pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
-        newResults.push({ ...result, source: url });
+        newResults.push({ ...result, source: url, displayName: pendingRestaurant || result.restaurante });
         if (!result.error && result.platos?.length > 0) {
           await saveAnalysis(result, url, "url");
           await confirmMenu(pendingPlaceId, result.restaurante);
@@ -325,7 +325,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const result = await analyzeOne(messages, 1, "", pendingRestaurant);
         if (result.not_menu) result.error = t.notMenu;
         if (!result.restaurante) result.restaurante = pendingRestaurant;
-        newResults.push({ ...result, source: pendingRestaurant });
+        newResults.push({ ...result, source: pendingRestaurant, displayName: pendingRestaurant || result.restaurante });
         if (!result.error && result.platos?.length > 0) {
           await saveAnalysis(result, pendingRestaurant, "scrape");
           await confirmMenu(pendingPlaceId, result.restaurante);
@@ -334,7 +334,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         const noMenuMsg = lang === "es"
           ? "No encontramos la carta online. Sube una foto o PDF de la carta, o busca el link en Google."
           : "Menu not found online. Upload a photo or PDF, or find the link on Google.";
-        newResults.push({ restaurante: pendingRestaurant, platos: [], error: noMenuMsg, source: pendingRestaurant });
+        newResults.push({ restaurante: pendingRestaurant, platos: [], error: noMenuMsg, source: pendingRestaurant, displayName: pendingRestaurant });
       }
     }
 
@@ -571,7 +571,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
               <div style={s.resultsGrid}>
                 {results.map((result, ri) => (
                   <div key={ri}>
-                    <div style={s.restaurantName}>{result.restaurante || result.source}</div>
+                    <div style={s.restaurantName}>{result.displayName || result.restaurante || result.source}</div>
                     {result.error
                       ? <div style={s.errorBox}>⚠ {result.error}</div>
                       : (result.platos || []).slice(0, 3).map((p, i) => renderDishCard(p, i))
@@ -579,7 +579,18 @@ function AppInner({ lang, setLang, tool, setTool }) {
                   </div>
                 ))}
               </div>
-              <button style={s.restartBtn} onClick={restart}>{t.restart}</button>
+              {results.every(r => r.error) && pendingRestaurant ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "1.5rem" }}>
+                  <button style={s.restartBtn} onClick={() => setStep(2)}>
+                    {lang === "en" ? "↑ Upload menu photo or PDF" : "↑ Subir foto o PDF de la carta"}
+                  </button>
+                  <button style={{ ...s.restartBtn, marginTop: 0 }} onClick={() => { setTool("discover"); restart(); }}>
+                    {lang === "en" ? "← Back to Lima Eats" : "← Volver a Lima Eats"}
+                  </button>
+                </div>
+              ) : (
+                <button style={s.restartBtn} onClick={restart}>{t.restart}</button>
+              )}
             </div>
           )}
         </div>
