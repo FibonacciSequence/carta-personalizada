@@ -479,6 +479,14 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <>
               <h1 style={s.h1}>{pendingRestaurant}</h1>
               <p style={s.subtitle}>{lang === "es" ? "Sube la carta o agrega un link para analizar" : "Upload the menu or add a link to analyze"}</p>
+              <div style={{ display: "flex", gap: 8, marginBottom: "1.25rem", flexWrap: "wrap" }}>
+                <a href={`https://popular.cluvi.pe/popular/search?q=${encodeURIComponent(pendingRestaurant)}`} target="_blank" rel="noopener noreferrer" style={{ ...s.addUrl, textDecoration: "none", display: "inline-block" }}>
+                  🔍 {lang === "es" ? "Buscar en Cluvi" : "Search on Cluvi"}
+                </a>
+                <a href={`https://www.google.com/search?q=${encodeURIComponent(pendingRestaurant + " Lima carta menu")}`} target="_blank" rel="noopener noreferrer" style={{ ...s.addUrl, textDecoration: "none", display: "inline-block" }}>
+                  🌐 {lang === "es" ? "Buscar en Google" : "Search on Google"}
+                </a>
+              </div>
             </>
           ) : (
             <>
