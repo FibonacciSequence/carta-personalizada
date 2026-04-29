@@ -151,6 +151,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
   }, []);
 
   const filtered = restaurants.filter(r => {
+    if ((r.rating || 0) < 4.0) return false;
     if (!search.trim()) return true;
     const name = r.displayName?.text?.toLowerCase() || "";
     const addr = r.formattedAddress?.toLowerCase() || "";
