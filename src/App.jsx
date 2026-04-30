@@ -69,12 +69,14 @@ function buildPrompt(prefs, lang) {
 "${prefs}"
 
 When analyzing each restriction, consider ALL hidden ingredients and derivatives:
-- "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce, bread, dough, pastry, empanada wrapper, pizza dough, breading
+- "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce, bread, dough, pastry, empanada wrapper, pizza dough, breading, panko (panko contains wheat unless explicitly labeled gluten-free), seitan
 - "No lactose/cow milk": butter, cream, cheese, yogurt, casein, whey, provoleta, mozzarella
-- "No soja/soy/soya": tofu, tempeh, edamame, miso, tamari, salsa de soja, soy sauce, soy lecithin, proteína de soja — ALL are soy derivatives
+- "No soja/soy/soya": tofu (tofu IS soy, always discard when user says no soja), tempeh (tempeh IS fermented soy, always discard), edamame, miso, tamari, sillao, soy sauce/salsa de soja, soy lecithin, textured soy protein/proteína de soja — ALL are soy derivatives
 - "No pork": ham, bacon, chorizo, chori, morci (morcilla), blood sausage, pancetta, lard, bondiola, cerdo, jamón
 - "No nitrates/nitrites": cold cuts, cured meats, chorizo, morcilla, sausage, hot dog, processed meats
-- "Histaminas/histaminosis/bajas en histaminas" — HIGH-HISTAMINE foods to DISCARD as CORE ingredients: tomato/salsa de tomate/tomate cherry, spinach/espinaca, eggplant/berenjena, avocado/palta/aguacate, strawberries/frutillas, citrus/limón/naranja juice as main component, chocolate/cacao, aged cheese, wine/beer/vinegar-based dressings, cold cuts, ALL fermented foods (miso, chucrut, kombucha, tempeh), leftovers. DAO blockers (alcohol, black tea, mate) also DISCARD.
+- "Histaminas/histaminosis/bajas en histaminas" — HIGH-HISTAMINE foods to DISCARD as CORE ingredients: tomato/salsa de tomate/tomate cherry, spinach/espinaca, eggplant/berenjena, avocado/palta/aguacate, strawberries/frutillas, citrus/limón/naranja juice as main component, chocolate/cacao, aged cheese, wine/beer/vinegar-based dressings, cold cuts, ALL fermented foods (miso, chucrut, kombucha, tempeh, pickles/encurtidos, sauerkraut), leftovers. DAO blockers (alcohol, black tea, mate) also DISCARD.
+- Legumes (lentils/lentejas, chickpeas/garbanzos, beans/frijoles, falafel) are histamine LIBERATORS — note in advertencia if present, do not discard unless user explicitly says no legumes.
+- NEVER assume an ingredient is "safe in this context" or "gluten-free version" unless the menu explicitly states it.
 
 CRITICAL INTERPRETATION RULES:
 - "Con ensalada mixta" or "al plato con ensalada mixta" = the salad is a SEPARABLE SIDE DISH placed alongside the main dish. Evaluate only the main protein and cooking method. If the salad has tomato or spinach, note it in advertencia but still recommend the main dish.
