@@ -71,26 +71,26 @@ function buildPrompt(prefs, lang) {
 When analyzing each restriction, consider ALL hidden ingredients and derivatives:
 - "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce, bread, dough, pastry, empanada wrapper, pizza dough, breading
 - "No lactose/cow milk": butter, cream, cheese, yogurt, casein, whey, provoleta, mozzarella
-- "No soy": tofu, edamame, miso, soy sauce, soy lecithin
+- "No soja/soy/soya": tofu, tempeh, edamame, miso, tamari, salsa de soja, soy sauce, soy lecithin, proteína de soja — ALL are soy derivatives
 - "No pork": ham, bacon, chorizo, chori, morci (morcilla), blood sausage, pancetta, lard, bondiola, cerdo, jamón
 - "No nitrates/nitrites": cold cuts, cured meats, chorizo, morcilla, sausage, hot dog, processed meats
-- "High histamine foods" to avoid: aged cheeses, wine, beer, vinegar, tomato, spinach, eggplant, avocado, strawberries, citrus, chocolate, cold cuts, fermented foods, leftovers
-- "DAO blockers" to avoid: alcohol, energy drinks, black tea, green tea, mate
+- "Histaminas/histaminosis/bajas en histaminas" — HIGH-HISTAMINE foods to DISCARD as CORE ingredients: tomato/salsa de tomate/tomate cherry, spinach/espinaca, eggplant/berenjena, avocado/palta/aguacate, strawberries/frutillas, citrus/limón/naranja juice as main component, chocolate/cacao, aged cheese, wine/beer/vinegar-based dressings, cold cuts, ALL fermented foods (miso, chucrut, kombucha, tempeh), leftovers. DAO blockers (alcohol, black tea, mate) also DISCARD.
 
 CRITICAL INTERPRETATION RULES:
-- "Con ensalada mixta" or "al plato con ensalada mixta" = the salad is a SEPARABLE SIDE DISH placed alongside the main dish. Evaluate only the main protein and cooking method. If the salad has tomato, note it in advertencia but still recommend the main dish.
+- "Con ensalada mixta" or "al plato con ensalada mixta" = the salad is a SEPARABLE SIDE DISH placed alongside the main dish. Evaluate only the main protein and cooking method. If the salad has tomato or spinach, note it in advertencia but still recommend the main dish.
 - "Con provenzal" = garlic and parsley sauce, generally safe (check for butter).
-- Fresh grilled chicken (pollo a la parrilla, pollo al limón, pollo deshuesado a la parrilla) = safe protein with no gluten, no lactose, no soy, no pork, no nitrates, low histamine.
-- Organ meats from beef or chicken (riñones, molleja) = safe if grilled, not cured or processed.
+- Fresh grilled/baked/steamed proteins (chicken, fish, beef, legumes without soy) = safe low-histamine proteins.
 - DISCARD: any dish with dough/bread/wrapper as core ingredient (empanadas, sandwiches, medialunas, choripán, bondipán, morcipán, milanga with breading).
 - DISCARD: any dish with cheese as core ingredient (provoleta, pizza, matambre a la pizza).
 - DISCARD: any dish where cerdo/pork is the main protein (bondiola, asado de cerdo, chorizo as main).
+- DISCARD when user says "no soja/soy": any dish where tofu, tempeh, or miso is a PRIMARY ingredient (tofu scramble, hash de tofu, tofu curry — ALL discard even if other ingredients look safe).
+- DISCARD when user says "histaminas/bajas en histaminas": any dish where tomato/salsa de tomate, espinaca, palta/avocado, chocolate/cacao, or any fermented base (miso, tempeh, chucrut) is COOKED INTO the dish as a non-separable ingredient. If it's only in a SEPARABLE SIDE (salad served alongside), note it in advertencia instead.
 
 RECOMMENDATION RULES:
-1. First recommendation: dish with ZERO issues — all core and side ingredients are safe.
+1. First recommendation: dish with ZERO issues — all core and non-separable ingredients are safe.
 2. Second and third: dishes where core protein is safe but a separable side may have an issue — note it in advertencia.
 3. Order from safest to least safe.
-4. Prioritize main dishes (grilled meats, proteins) over sides (papas, huevo frito).
+4. Prioritize main dishes (grilled meats, proteins, grain bowls) over sides (papas, huevo frito).
 5. In "por_que": explain specifically why the main ingredient is compatible. OMIT the "advertencia" field entirely if there is nothing to warn about.
 6. In "restaurante": exact name from menu.
 7. In "etiquetas": max 3 short tags.
@@ -199,18 +199,25 @@ function AppInner({ lang, setLang, tool, setTool }) {
   useEffect(() => {
     if (!isSignedIn || !user) return;
     fetch("/api/preferences", { headers: { "x-user-id": user.id } })
-      .then(r => r.json()).then(d => { if (d.prefs) setPrefs(d.prefs); }).catch(() => {});
+      .then(r => r.json())
+      .then(d => { if (d.prefs) setPrefs(d.prefs); else if (d.error) console.error("load prefs error:", d.error); })
+      .catch(e => console.error("load prefs fetch error:", e.message));
     fetch("/api/history", { headers: { "x-user-id": user.id } })
       .then(r => r.json()).then(d => { if (Array.isArray(d)) setHistory(d); }).catch(() => {});
   }, [isSignedIn, user]);
 
   const savePreferences = async (p) => {
-    if (!isSignedIn || !user) return;
-    await fetch("/api/preferences", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-user-id": user.id, "x-user-email": user.primaryEmailAddress?.emailAddress || "" },
-      body: JSON.stringify({ prefs: p }),
-    }).catch(() => {});
+    if (!isSignedIn || !user || !p.trim()) return;
+    try {
+      const res = await fetch("/api/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-user-id": user.id, "x-user-email": user.primaryEmailAddress?.emailAddress || "" },
+        body: JSON.stringify({ prefs: p }),
+      });
+      if (!res.ok) console.error("savePreferences failed:", await res.text());
+    } catch (e) {
+      console.error("savePreferences error:", e.message);
+    }
   };
 
   const saveAnalysis = async (result, sourceName, sourceType) => {
@@ -274,6 +281,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
     // If no valid files/urls but we have a restaurant name, try scraping by name
     const shouldScrapeByName = validFiles.length === 0 && validUrls.length === 0 && pendingRestaurant;
     if (validFiles.length === 0 && validUrls.length === 0 && !shouldScrapeByName) return;
+    savePreferences(prefs);
     setLoading(true);
     setStep(3);
     const newResults = [];
