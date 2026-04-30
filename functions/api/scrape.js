@@ -14,7 +14,7 @@ export async function onRequestPost(context) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         url: targetUrl,
-        waitFor: 2000,
+        waitFor: 1500,
         rejectResourceTypes: ["image", "font", "stylesheet"],
       }),
     });
@@ -67,7 +67,7 @@ export async function onRequestPost(context) {
       }
 
       // Try to find menu subpage
-      const menuLinks = findMenuLinks(html, url);
+      const menuLinks = findMenuLinks(html, url).slice(0, 1);
       for (const menuUrl of menuLinks) {
         try {
           const menuHtml = await scrapeText(menuUrl);
@@ -102,28 +102,6 @@ export async function onRequestPost(context) {
       }
     } catch (e) {
       console.error("Cluvi search failed:", e.message);
-    }
-  }
-
-  // Try Rappi Peru search by name
-  if (name) {
-    try {
-      const rappiSearch = `https://www.rappi.com.pe/restaurantes?searchterm=${encodeURIComponent(name)}`;
-      const rappiHtml = await scrapeText(rappiSearch);
-      // Find restaurant slug from search results
-      const slugMatch = rappiHtml.match(/href="\/restaurantes\/([^"?]+)"/);
-      if (slugMatch) {
-        const rappiUrl = `https://www.rappi.com.pe/restaurantes/${slugMatch[1]}`;
-        const menuHtml = await scrapeText(rappiUrl);
-        const menuText = htmlToText(menuHtml);
-        if (menuText.length > 300) {
-          return new Response(JSON.stringify({ text: menuText, source: "rappi", url: rappiUrl }), {
-            headers: { "Content-Type": "application/json" },
-          });
-        }
-      }
-    } catch (e) {
-      console.error("Rappi search failed:", e.message);
     }
   }
 

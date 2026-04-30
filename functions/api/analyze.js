@@ -31,11 +31,15 @@ export async function onRequestPost(context) {
 
       if (isTextOnly) {
         try {
+          const scrapeController = new AbortController();
+          const scrapeTimeout = setTimeout(() => scrapeController.abort(), 18000);
           const scrapeRes = await fetch(`${new URL(context.request.url).origin}/api/scrape`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: restaurant_url || "", name: restaurant_name || "", placeId: restaurant_place_id || "" }),
+            signal: scrapeController.signal,
           });
+          clearTimeout(scrapeTimeout);
 
           if (scrapeRes.ok) {
             const { text, source, url: scrapedUrl } = await scrapeRes.json();

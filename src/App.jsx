@@ -266,7 +266,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
     }).catch(() => {});
   };
 
-  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPrefs(""); setPendingRestaurant(""); setPendingPlaceId(null); };
+  const restart = () => { setStep(1); setFiles([]); setUrls([""]); setResults([]); setPendingRestaurant(""); setPendingPlaceId(null); };
 
   const analyze = async () => {
     const validFiles = files.filter(f => f);
@@ -547,6 +547,12 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <button style={s.addUrl} onClick={() => setUrls(prev => [...prev, ""])}>{t.addUrl}</button>
           )}
 
+          {!prefs.trim() && (
+            <div style={{ background: "#2a1f00", border: "0.5px solid #4a3a00", borderRadius: 8, padding: "10px 13px", fontSize: 12, color: "#efb840", marginTop: "1rem" }}>
+              ⚠ {lang === "es" ? "No ingresaste tus preferencias alimentarias. Las recomendaciones serán genéricas." : "You haven't entered your dietary preferences. Recommendations will be generic."}
+              {" "}<button style={{ background: "none", border: "none", color: "#efb840", textDecoration: "underline", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }} onClick={() => setStep(1)}>{lang === "es" ? "Agregar ahora" : "Add now"}</button>
+            </div>
+          )}
           <button style={s.btn} onClick={analyze}
             disabled={files.length === 0 && urls.every(u => !u.trim()) && !pendingRestaurant}>
             {loading ? <><span style={s.spinner} />{t.analysing}</> : t.analyze}
