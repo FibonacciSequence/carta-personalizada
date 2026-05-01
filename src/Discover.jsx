@@ -119,8 +119,10 @@ function isTop50(r) {
   return TOP50.some(t => name.includes(t));
 }
 
-export default function Discover({ onAnalyze, lang = "es" }) {
-  const [prefs, setPrefs] = useState("");
+export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsChange }) {
+  const [localPrefs, setLocalPrefs] = useState(prefs);
+
+  useEffect(() => { setLocalPrefs(prefs); }, [prefs]);
   const [activeFilter, setActiveFilter] = useState("todos");
   const [search, setSearch] = useState("");
   const [restaurants, setRestaurants] = useState([]);
@@ -164,7 +166,7 @@ export default function Discover({ onAnalyze, lang = "es" }) {
     const name = r.displayName?.text || "restaurante";
     let url = (r.websiteUri || "").trim().split(/\s+/)[0].replace(/(%20)+$/i, "").trim();
     if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-    if (onAnalyze) onAnalyze({ name, url, prefs, placeId: r.id });
+    if (onAnalyze) onAnalyze({ name, url, placeId: r.id });
   };
 
   useEffect(() => { fetchPlaces("todos"); }, []);
@@ -351,8 +353,8 @@ export default function Discover({ onAnalyze, lang = "es" }) {
         <div>
           <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "#aaa", marginBottom: 8 }}>{lang === "en" ? "My preferences" : "Mis preferencias"}</div>
           <textarea
-            value={prefs}
-            onChange={e => setPrefs(e.target.value)}
+            value={localPrefs}
+            onChange={e => { setLocalPrefs(e.target.value); if (onPrefsChange) onPrefsChange(e.target.value); }}
             placeholder={lang === "en" ? "E.g.: No gluten, lactose or pork. I avoid high-histamine foods..." : "Ej: No como gluten, lactosa ni cerdo. Evito alimentos altos en histaminas..."}
             style={{ width: "100%", minHeight: 90, padding: "12px", border: `0.5px solid ${border}`, borderRadius: 10, fontFamily: "inherit", fontSize: 13, lineHeight: 1.6, resize: "none", color: textSecondary, background: "#111", outline: "none", boxSizing: "border-box", fontStyle: "italic" }}
           />

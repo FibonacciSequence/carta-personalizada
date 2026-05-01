@@ -478,8 +478,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
           </div>
         </div>
-        <Discover lang={lang} onAnalyze={({ name, url, prefs: p, placeId }) => {
-          if (p) setPrefs(p);
+        <Discover lang={lang} prefs={prefs} onPrefsChange={setPrefs} onAnalyze={({ name, url, placeId }) => {
           setUrls([url || ""]);
           setFiles([]);
           setStep(2);
