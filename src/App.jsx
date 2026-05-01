@@ -400,7 +400,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
             {p.badges.filter(b => BADGES[b]).map((b, j) => {
               const bd = BADGES[b];
               return (
-                <span key={j} title={bd.title} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", padding: "2px 7px", borderRadius: 20, background: bd.bg, color: bd.color, border: `0.5px solid ${bd.border}`, fontFamily: "inherit", cursor: "default" }}>
+                <span key={j} data-tip={bd.title} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", padding: "2px 7px", borderRadius: 20, background: bd.bg, color: bd.color, border: `0.5px solid ${bd.border}`, fontFamily: "inherit", cursor: "help" }}>
                   {bd.label}
                 </span>
               );
@@ -492,7 +492,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   return (
     <div style={s.wrap}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap'); [data-tip]{position:relative;} [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#222;color:#efefef;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:400;white-space:nowrap;pointer-events:none;border:0.5px solid rgba(255,255,255,0.15);z-index:10;letter-spacing:0;}`}</style>
       <>
       <div style={s.topBar}>
         <div>
