@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SignIn, SignUp, useUser, UserButton } from "@clerk/clerk-react";
 import Discover from "./Discover.jsx";
 
@@ -63,49 +63,73 @@ const T = {
   },
 };
 
+const BADGES = {
+  GF: { label: "GF", title: "Sin Gluten",      bg: "#1a1500", color: "#d4a017", border: "#3a2e00" },
+  V:  { label: "V",  title: "Vegano",           bg: "#0d1f0d", color: "#4caf80", border: "#1a4a2a" },
+  VG: { label: "VG", title: "Vegetariano",      bg: "#0f200f", color: "#7dcf7d", border: "#1e421e" },
+  SL: { label: "SL", title: "Sin Lácteos",      bg: "#0a1a2a", color: "#5ba8d4", border: "#1a3a4a" },
+  SS: { label: "SS", title: "Sin Soja",         bg: "#1a1000", color: "#e07020", border: "#3a2500" },
+  SP: { label: "SP", title: "Sin Cerdo",        bg: "#200a0a", color: "#e06060", border: "#3a1515" },
+  BH: { label: "BH", title: "Bajas Histaminas", bg: "#130a1f", color: "#9f70d4", border: "#2a1545" },
+  SA: { label: "SA", title: "Sin Azúcar",       bg: "#0a1a1a", color: "#40b0b0", border: "#153030" },
+};
+
 function buildPrompt(prefs, lang) {
-  return `You are a clinical dietitian and expert chef with deep knowledge of allergies, intolerances, and nutritional biochemistry. The user has these dietary preferences and restrictions:
+  return `You are a clinical dietitian analyzing a restaurant menu for a user with specific dietary restrictions.
 
-"${prefs}"
+User restrictions: "${prefs}"
 
-When analyzing each restriction, consider ALL hidden ingredients and derivatives:
-- "No gluten": wheat, barley, rye, oats, malt, modified starch, traditional soy sauce, bread, dough, pastry, empanada wrapper, pizza dough, breading, panko (panko contains wheat unless explicitly labeled gluten-free), seitan
-- "No lactose/cow milk": butter, cream, cheese, yogurt, casein, whey, provoleta, mozzarella
-- "No soja/soy/soya": tofu (tofu IS soy, always discard when user says no soja), tempeh (tempeh IS fermented soy, always discard), edamame, miso, tamari, sillao, soy sauce/salsa de soja, soy lecithin, textured soy protein/proteína de soja — ALL are soy derivatives
-- "No pork": ham, bacon, chorizo, chori, morci (morcilla), blood sausage, pancetta, lard, bondiola, cerdo, jamón
-- "No nitrates/nitrites": cold cuts, cured meats, chorizo, morcilla, sausage, hot dog, processed meats
-- "Histaminas/histaminosis/bajas en histaminas" — HIGH-HISTAMINE foods to DISCARD as CORE ingredients: tomato/salsa de tomate/tomate cherry, spinach/espinaca, eggplant/berenjena, avocado/palta/aguacate, strawberries/frutillas, citrus/limón/naranja juice as main component, chocolate/cacao, aged cheese, wine/beer/vinegar-based dressings, cold cuts, ALL fermented foods (miso, chucrut, kombucha, tempeh, pickles/encurtidos, sauerkraut), leftovers. DAO blockers (alcohol, black tea, mate) also DISCARD.
-- Legumes (lentils/lentejas, chickpeas/garbanzos, beans/frijoles, falafel) are histamine LIBERATORS — note in advertencia if present, do not discard unless user explicitly says no legumes.
-- NEVER assume an ingredient is "safe in this context" or "gluten-free version" unless the menu explicitly states it.
+═══ STEP 1 — IDENTIFY RESTRICTED INGREDIENTS ═══
+Map the user's restrictions to their full ingredient list:
+• "no gluten / sin gluten": wheat/trigo, barley/cebada, rye/centeno, oats/avena, malt/malta, seitan, panko, breadcrumbs/pan rallado, empanada dough, pizza dough, breading, soy sauce (traditional)
+• "no lactosa / no lácteos": butter/mantequilla, cream/crema, cheese/queso, yogurt, casein, whey, provoleta, mozzarella
+• "no soja / no soy / no soya": TOFU (tofu IS soy — always excluded), TEMPEH (tempeh IS fermented soy — always excluded), edamame, miso, sillao, tamari, soy sauce/salsa de soja, soy lecithin, textured soy protein
+• "no cerdo / no pork": ham/jamón, bacon, chorizo, morcilla, pancetta, lard/manteca de cerdo, bondiola, cecina
+• "no nitratos": all cured/processed meats (cold cuts, salchichas, hot dogs)
+• "histaminas / bajas en histaminas / histaminosis": tomato/tomate (any form — sauce, cherry, raw cooked in), spinach/espinaca, eggplant/berenjena, avocado/palta/aguacate, chocolate/cacao, citrus juice as main ingredient, aged cheese, wine/beer/vinegar-based sauces, ALL fermented foods (miso, tempeh, chucrut, pickles/encurtidos, kombucha, sauerkraut), processed meats, leftovers
 
-CRITICAL INTERPRETATION RULES:
-- "Con ensalada mixta" or "al plato con ensalada mixta" = the salad is a SEPARABLE SIDE DISH placed alongside the main dish. Evaluate only the main protein and cooking method. If the salad has tomato or spinach, note it in advertencia but still recommend the main dish.
-- "Con provenzal" = garlic and parsley sauce, generally safe (check for butter).
-- Fresh grilled/baked/steamed proteins (chicken, fish, beef, legumes without soy) = safe low-histamine proteins.
-- DISCARD: any dish with dough/bread/wrapper as core ingredient (empanadas, sandwiches, medialunas, choripán, bondipán, morcipán, milanga with breading).
-- DISCARD: any dish with cheese as core ingredient (provoleta, pizza, matambre a la pizza).
-- DISCARD: any dish where cerdo/pork is the main protein (bondiola, asado de cerdo, chorizo as main).
-- DISCARD when user says "no soja/soy": any dish where tofu, tempeh, or miso is a PRIMARY ingredient (tofu scramble, hash de tofu, tofu curry — ALL discard even if other ingredients look safe).
-- DISCARD when user says "histaminas/bajas en histaminas": any dish where tomato/salsa de tomate, espinaca, palta/avocado, chocolate/cacao, or any fermented base (miso, tempeh, chucrut) is COOKED INTO the dish as a non-separable ingredient. If it's only in a SEPARABLE SIDE (salad served alongside), note it in advertencia instead.
+═══ STEP 2 — ELIMINATE DISQUALIFIED DISHES ═══
+A dish is ELIMINATED (never recommend, never use as advertencia candidate) if ANY of its NON-SEPARABLE ingredients violate a hard restriction:
+✗ Contains tofu → eliminated if user said "no soja" (tofu revuelto, hash de tofu, tofu curry = all eliminated)
+✗ Contains tempeh → eliminated if user said "no soja" or "histaminas"
+✗ Main component is tomato sauce / espinaca / palta cooked into the dish → eliminated if user said "histaminas"
+✗ Contains gluten ingredients as core → eliminated
+✗ Contains cheese/dairy as core → eliminated if no lactosa
+✗ Main protein is pork/cerdo → eliminated
+NOTE: "Separable side" means a salad or garnish physically placed NEXT TO the main item on the plate. If tomato or spinach is COOKED INTO the main preparation (scramble, curry, hash, sauce), it is NOT separable.
 
-RECOMMENDATION RULES:
-1. First recommendation: dish with ZERO issues — all core and non-separable ingredients are safe.
-2. Second and third: dishes where core protein is safe but a separable side may have an issue — note it in advertencia.
-3. Order from safest to least safe.
-4. Prioritize main dishes (grilled meats, proteins, grain bowls) over sides (papas, huevo frito).
-5. In "por_que": explain specifically why the main ingredient is compatible. OMIT the "advertencia" field entirely if there is nothing to warn about.
-6. In "restaurante": exact name from menu.
-7. In "etiquetas": max 3 short tags.
-8. In "precio": copy EXACTLY as on menu. Omit if not visible.
-9. Fewer than 3 is fine if not enough safe options.
-10. NEVER recommend categories. Only specific named dishes.
-11. URLs from sites like cluvi.pe, opentable.com, mesa247.pe, rappi.com and similar ARE restaurant menus.
-12. If NOT a restaurant menu, return: {"not_menu": true, "restaurante": ""}
+═══ STEP 3 — RANK REMAINING DISHES ═══
+From the dishes that passed Step 2:
+1. First: dish with zero issues in all components including sides
+2. Second/Third: dishes where the main is safe but a SEPARABLE side has a minor issue → note only in advertencia
+3. Prioritize substantial main dishes over sides or drinks
+4. Fewer than 3 is correct if fewer safe options exist — do NOT bend rules to fill 3 slots
+5. Legumes (lentejas, garbanzos, frijoles, falafel) → note in advertencia as histamine liberators, do not eliminate
+
+═══ OUTPUT RULES ═══
+• "por_que": explain why the main preparation is safe for these specific restrictions
+• "advertencia": ONLY for separable sides or minor concerns on an otherwise safe dish — NEVER for a core disqualifying ingredient (if the core is bad, the dish should not appear at all)
+• "restaurante": exact name from the menu
+• "etiquetas": max 3 short descriptive tags (e.g. "grillado", "proteico", "vegano")
+• "badges": array of dietary symbol codes that this dish CONFIRMS. Only include a badge if the dish genuinely meets that criterion based on the menu. Possible values:
+  - "GF" = sin gluten / gluten-free (no wheat, barley, oats, breading, etc.)
+  - "V" = vegano (no animal products at all)
+  - "VG" = vegetariano (no meat or fish, may have eggs/dairy)
+  - "SL" = sin lácteos / dairy-free
+  - "SS" = sin soja / soy-free (no tofu, tempeh, miso, sillao)
+  - "SP" = sin cerdo / pork-free
+  - "BH" = bajas histaminas (no tomato, spinach, avocado, fermented foods, aged cheese, etc. as main ingredients)
+  - "SA" = sin azúcar añadida
+  Do NOT add a badge just because the user asked to avoid it — only add it if this specific dish confirms it. A dish can have multiple badges.
+• "precio": copy exactly as on menu, omit if not visible
+• NEVER recommend a dish category, only specific named dishes
+• URLs from cluvi.pe, opentable.com, mesa247.pe, rappi.com etc. ARE restaurant menus
+• If NOT a restaurant menu: {"not_menu": true, "restaurante": ""}
 
 ${lang === "en" ? "Respond in English." : "Responde en español."}
 
 Respond ONLY with JSON. Start with { end with }.
-{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."]}]}`;
+{"restaurante":"...","platos":[{"nombre":"...","precio":"...","por_que":"...","advertencia":"...","etiquetas":["..."],"badges":["GF","V"]}]}`;
 }
 
 function buildUrlPrompt(prefs, url, lang) {
@@ -198,15 +222,24 @@ function AppInner({ lang, setLang, tool, setTool }) {
     spinner: { width: 18, height: 18, border: "2px solid rgba(255,255,255,0.1)", borderTop: "2px solid #efefef", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block", verticalAlign: "middle", marginRight: 8 },
   };
 
+  const loadedPrefs = useRef(false);
+
   useEffect(() => {
     if (!isSignedIn || !user) return;
     fetch("/api/preferences", { headers: { "x-user-id": user.id } })
       .then(r => r.json())
-      .then(d => { if (d.prefs) setPrefs(d.prefs); else if (d.error) console.error("load prefs error:", d.error); })
+      .then(d => { if (d.prefs) { setPrefs(d.prefs); loadedPrefs.current = true; } else if (d.error) console.error("load prefs error:", d.error); })
       .catch(e => console.error("load prefs fetch error:", e.message));
     fetch("/api/history", { headers: { "x-user-id": user.id } })
       .then(r => r.json()).then(d => { if (Array.isArray(d)) setHistory(d); }).catch(() => {});
   }, [isSignedIn, user]);
+
+  // Auto-save prefs 2 seconds after the user stops typing
+  useEffect(() => {
+    if (!isSignedIn || !user || !prefs.trim()) return;
+    const timer = setTimeout(() => savePreferences(prefs), 2000);
+    return () => clearTimeout(timer);
+  }, [prefs, isSignedIn, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const savePreferences = async (p) => {
     if (!isSignedIn || !user || !p.trim()) return;
@@ -362,6 +395,18 @@ function AppInner({ lang, setLang, tool, setTool }) {
         </div>
         <div style={s.dishName}>{p.nombre}</div>
         {p.precio && <div style={s.dishPrice}>{p.precio}</div>}
+        {p.badges?.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+            {p.badges.filter(b => BADGES[b]).map((b, j) => {
+              const bd = BADGES[b];
+              return (
+                <span key={j} title={bd.title} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.04em", padding: "2px 7px", borderRadius: 20, background: bd.bg, color: bd.color, border: `0.5px solid ${bd.border}`, fontFamily: "inherit", cursor: "default" }}>
+                  {bd.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
         {p.etiquetas?.length > 0 && (
           <div style={s.tags}>{p.etiquetas.map((tag, j) => <span key={j} style={s.tag}>{tag}</span>)}</div>
         )}
