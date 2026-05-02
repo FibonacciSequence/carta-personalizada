@@ -518,13 +518,14 @@ function AppInner({ lang, setLang, tool, setTool }) {
     return (
       <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: "100vh", overflow: "hidden", background: "#0e0e0e" }}>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 1.5rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", background: "#0e0e0e" }}>
-          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "#efefef" }}>La Carta Personalizada</span>
-          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
+        <style>{`.disco-logo{display:block}@media(max-width:600px){.disco-logo{display:none}}`}</style>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 1rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", background: "#0e0e0e", flexWrap: "wrap" }}>
+          <span className="disco-logo" style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "#efefef", flexShrink: 0 }}>La Carta Personalizada</span>
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", flexShrink: 0 }}>
             <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
             <button style={{ background: "rgba(255,255,255,0.12)", color: "#efefef", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
           </div>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px" }}>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", flexShrink: 0 }}>
             <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
           </div>
@@ -543,18 +544,18 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   return (
     <div style={s.wrap}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap'); [data-tip]{position:relative;} [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#222;color:#efefef;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:400;white-space:nowrap;pointer-events:none;border:0.5px solid rgba(255,255,255,0.15);z-index:10;letter-spacing:0;}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap'); [data-tip]{position:relative} [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#222;color:#efefef;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:400;white-space:nowrap;pointer-events:none;border:0.5px solid rgba(255,255,255,0.15);z-index:10;letter-spacing:0} .hdr-sub{display:block} .hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap} @media(max-width:600px){.hdr-sub{display:none}.hdr-right{margin-left:0;width:100%;justify-content:space-between}}`}</style>
       <>
       <div style={s.topBar}>
         <div>
           <div style={s.logo}>La Carta Personalizada</div>
-          <div style={s.logoSub}>Tu menú a medida</div>
+          <div className="hdr-sub" style={s.logoSub}>Tu menú a medida</div>
         </div>
         <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
           <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>La Carta</button>
           <button style={{ background: "rgba(255,255,255,0.12)", color: "#efefef", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("discover")}>Lima Eats</button>
         </div>
-        <div style={s.topRight}>
+        <div className="hdr-right" style={{ ...s.topRight, margin: 0 }}>
           <div style={s.langToggle}>
             <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
             <button style={s.langBtn(lang === "en")} onClick={() => setLang("en")}>EN</button>
