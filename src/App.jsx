@@ -165,6 +165,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
   const [urls, setUrls] = useState([""]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
   const [dragging, setDragging] = useState(false);
   const [history, setHistory] = useState([]);
   const [pendingRestaurant, setPendingRestaurant] = useState("");
@@ -281,11 +282,36 @@ function AppInner({ lang, setLang, tool, setTool }) {
     r.readAsDataURL(file);
   });
 
+  // Resize + compress images to max 1920px / JPEG 0.82 before sending to API
+  const compressImage = (file) => new Promise((resolve) => {
+    const UNSUPPORTED = ["image/heic", "image/heif", "image/tiff", "image/bmp"];
+    if (!file.type.startsWith("image/") || UNSUPPORTED.includes(file.type)) { resolve(null); return; }
+    const MAX = 1920;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width >= height) { height = Math.round(height * MAX / width); width = MAX; }
+        else { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => {
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }));
+      }, "image/jpeg", 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+
   const analyzeOne = async (messages, attempt = 1, restaurantUrl = "", restaurantName = "") => {
     const res = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1500, messages, restaurant_url: restaurantUrl, restaurant_name: restaurantName, restaurant_place_id: pendingPlaceId || "" }),
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, messages, restaurant_url: restaurantUrl, restaurant_name: restaurantName, restaurant_place_id: pendingPlaceId || "" }),
     });
     if (res.status === 429) { const d = await res.json(); throw new Error(d.error || "Rate limit"); }
     const data = await res.json();
@@ -321,13 +347,37 @@ function AppInner({ lang, setLang, tool, setTool }) {
     setStep(3);
     const newResults = [];
 
-    for (const file of validFiles) {
+    for (let fi = 0; fi < validFiles.length; fi++) {
+      const file = validFiles[fi];
+      const fileLabel = `${file.name}${validFiles.length > 1 ? ` (${fi + 1}/${validFiles.length})` : ""}`;
+      setLoadingMsg(lang === "es" ? `Analizando ${fileLabel}…` : `Analyzing ${fileLabel}…`);
       try {
-        const base64 = await fileToBase64(file);
+        const isPdf = file.type === "application/pdf";
         const isImg = file.type.startsWith("image/");
-        const contentPart = isImg
-          ? { type: "image", source: { type: "base64", media_type: file.type, data: base64 } }
-          : { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } };
+
+        // Reject unsupported image formats (HEIC etc.)
+        if (!isPdf && !isImg) {
+          const fmt = file.name.split(".").pop()?.toUpperCase() || "desconocido";
+          throw new Error(lang === "es" ? `Formato ${fmt} no soportado. Usa JPG, PNG o PDF.` : `Format ${fmt} not supported. Use JPG, PNG or PDF.`);
+        }
+        const HEIC_TYPES = ["image/heic", "image/heif"];
+        if (HEIC_TYPES.includes(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+          throw new Error(lang === "es"
+            ? "Fotos HEIC (iPhone) no son soportadas. En Ajustes → Cámara → Formatos elige 'Más compatible' para guardar en JPG."
+            : "HEIC photos (iPhone) are not supported. In Settings → Camera → Formats choose 'Most Compatible' to save as JPG.");
+        }
+        // Compress images before sending
+        const processed = isImg ? await compressImage(file) : file;
+        if (!processed) throw new Error(lang === "es" ? "No se pudo procesar la imagen." : "Could not process the image.");
+
+        // Check compressed size (rough: base64 is ~1.37x)
+        if (processed.size > 9_000_000) throw new Error(lang === "es" ? "Archivo demasiado grande. Reduce la resolución de la imagen." : "File too large. Please reduce the image resolution.");
+
+        const base64 = await fileToBase64(processed);
+        const mediaType = isPdf ? "application/pdf" : "image/jpeg";
+        const contentPart = isPdf
+          ? { type: "document", source: { type: "base64", media_type: mediaType, data: base64 } }
+          : { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } };
         const messages = [{ role: "user", content: [contentPart, { type: "text", text: buildPrompt(prefs, lang) }] }];
         const result = await analyzeOne(messages);
         if (result.not_menu) result.error = t.notMenu;
@@ -337,7 +387,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
           await confirmMenu(pendingPlaceId, result.restaurante);
         }
       } catch (e) {
-        newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: file.name });
+        newResults.push({ restaurante: "No disponible", platos: [], error: e.message || t.fileError, source: file.name, displayName: pendingRestaurant || file.name });
       }
     }
 
@@ -383,6 +433,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
     setResults(newResults);
     setLoading(false);
+    setLoadingMsg("");
   };
 
   const renderDishCard = (p, i) => {
@@ -583,7 +634,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
             <div style={s.uploadText}>{t.dragDrop}</div>
             <div style={s.uploadSub}>{t.dragDropSub}</div>
           </div>
-          <input id="file-inp" type="file" accept="image/*,.pdf" multiple style={{ display: "none" }}
+          <input id="file-inp" type="file" accept="image/jpeg,image/png,image/webp,image/gif,.pdf" multiple style={{ display: "none" }}
             onChange={e => { const f = Array.from(e.target.files).slice(0, 5 - files.length); setFiles(prev => [...prev, ...f].slice(0, 5)); }} />
           {files.map((f, i) => (
             <div key={i} style={{ ...s.fileChip, marginBottom: 6 }}>
@@ -623,7 +674,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
               <p style={{ fontFamily: "Georgia, serif", fontSize: 18, fontStyle: "italic", color: "#efefef", marginBottom: 6 }}>
                 {lang === "es" ? "Leyendo la carta…" : "Reading the menu…"}
               </p>
-              <p style={{ fontSize: 13, color: "#555" }}>{lang === "es" ? "Buscando los platos perfectos para ti" : "Finding the perfect dishes for you"}</p>
+              <p style={{ fontSize: 13, color: "#555" }}>{loadingMsg || (lang === "es" ? "Buscando los platos perfectos para ti" : "Finding the perfect dishes for you")}</p>
             </div>
           )}
           {!loading && results.length > 0 && (
