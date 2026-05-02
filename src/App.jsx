@@ -282,29 +282,50 @@ function AppInner({ lang, setLang, tool, setTool }) {
     r.readAsDataURL(file);
   });
 
-  // Resize + compress images to max 1920px / JPEG 0.82 before sending to API
-  const compressImage = (file) => new Promise((resolve) => {
+  // Resize + compress images to max 1568px (Anthropic optimal) / JPEG 0.85 before sending to API
+  // Uses createImageBitmap when available — correctly handles iPhone EXIF rotation
+  const compressImage = (file) => new Promise((resolve, reject) => {
     const UNSUPPORTED = ["image/heic", "image/heif", "image/tiff", "image/bmp"];
     if (!file.type.startsWith("image/") || UNSUPPORTED.includes(file.type)) { resolve(null); return; }
-    const MAX = 1920;
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let { width, height } = img;
-      if (width > MAX || height > MAX) {
-        if (width >= height) { height = Math.round(height * MAX / width); width = MAX; }
-        else { width = Math.round(width * MAX / height); height = MAX; }
+    const MAX = 1568;
+
+    const drawAndExport = (source, rawW, rawH) => {
+      let w = rawW, h = rawH;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
       }
       const canvas = document.createElement("canvas");
-      canvas.width = width; canvas.height = height;
-      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("Canvas not available")); return; }
+      ctx.drawImage(source, 0, 0, w, h);
       canvas.toBlob(blob => {
+        if (!blob) { reject(new Error("Compression failed")); return; }
         resolve(new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }));
-      }, "image/jpeg", 0.82);
+      }, "image/jpeg", 0.85);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
-    img.src = url;
+
+    // createImageBitmap respects EXIF rotation in Chrome 81+ and Safari 15+ (iPhone iOS 15+)
+    if (typeof createImageBitmap === "function") {
+      createImageBitmap(file).then(bm => {
+        drawAndExport(bm, bm.width, bm.height);
+        bm.close?.();
+      }).catch(() => {
+        // Fallback: <img> element (EXIF not always respected in canvas on older iOS)
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => { URL.revokeObjectURL(url); drawAndExport(img, img.naturalWidth, img.naturalHeight); };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+      });
+    } else {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => { URL.revokeObjectURL(url); drawAndExport(img, img.naturalWidth, img.naturalHeight); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    }
   });
 
   const analyzeOne = async (messages, attempt = 1, restaurantUrl = "", restaurantName = "") => {
@@ -315,12 +336,21 @@ function AppInner({ lang, setLang, tool, setTool }) {
     });
     if (res.status === 429) { const d = await res.json(); throw new Error(d.error || "Rate limit"); }
     const data = await res.json();
+    // Surface Anthropic API errors (wrong format, oversize, etc.)
+    if (data.error) {
+      const msg = data.error.message || JSON.stringify(data.error);
+      console.error("Anthropic API error:", msg);
+      if (attempt < 2) return analyzeOne(messages, attempt + 1, restaurantUrl, restaurantName);
+      throw new Error(msg);
+    }
     const text = (data.content || []).map(b => b.text || "").join("");
-    const clean = text.replace(/```json|```/g, "").trim();
+    // Extract JSON even if the model added preamble/postamble text
+    const stripped = text.replace(/```json|```/g, "").trim();
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
     try {
-      return JSON.parse(clean);
+      return JSON.parse(jsonMatch?.[0] ?? stripped);
     } catch {
-      if (attempt < 2) return analyzeOne(messages, attempt + 1);
+      if (attempt < 2) return analyzeOne(messages, attempt + 1, restaurantUrl, restaurantName);
       return { restaurante: "No disponible", platos: [], error: t.fileError };
     }
   };
