@@ -230,11 +230,18 @@ function AppInner({ lang, setLang, tool, setTool }) {
       .then(r => r.json()).then(d => { if (Array.isArray(d)) setHistory(d); }).catch(() => {});
   }, [isSignedIn, user]);
 
-  // Remove OAuth query params (e.g. ?code=...) from browser history after sign-in
-  // so clicking Back doesn't land on a consumed Google OAuth URL → 400
+  // After OAuth sign-in, push 2 guard history entries so Back stays in-app
+  // (Clerk handles code exchange server-side; we detect via sessionStorage flag set on click)
   useEffect(() => {
-    if (isSignedIn && window.location.search) {
-      window.history.replaceState(null, "", window.location.pathname);
+    if (isSignedIn) {
+      if (sessionStorage.getItem("oauthStarted")) {
+        sessionStorage.removeItem("oauthStarted");
+        window.history.replaceState(null, "", window.location.pathname);
+        window.history.pushState(null, "", window.location.pathname);
+        window.history.pushState(null, "", window.location.pathname);
+      } else if (window.location.search) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
     }
   }, [isSignedIn]);
 
@@ -537,7 +544,9 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   if (view === "signin") return (
     <div style={{ display: "flex", justifyContent: "center", padding: "3rem 1rem", background: "#0e0e0e", minHeight: "100vh" }}>
-      <SignIn afterSignInUrl="/" />
+      <div onClick={() => sessionStorage.setItem("oauthStarted", "1")}>
+        <SignIn afterSignInUrl="/" />
+      </div>
     </div>
   );
   if (view === "signup") return (
