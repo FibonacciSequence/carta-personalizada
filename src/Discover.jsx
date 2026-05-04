@@ -183,6 +183,9 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
       googleMapRef.current = new window.google.maps.Map(container, {
         center: { lat: -12.0464, lng: -77.0428 },
         zoom: 12,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
         styles: [
           { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
           { elementType: "labels.text.stroke", stylers: [{ color: "#0e0e0e" }] },

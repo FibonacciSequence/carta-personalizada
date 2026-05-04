@@ -230,6 +230,14 @@ function AppInner({ lang, setLang, tool, setTool }) {
       .then(r => r.json()).then(d => { if (Array.isArray(d)) setHistory(d); }).catch(() => {});
   }, [isSignedIn, user]);
 
+  // Remove OAuth query params (e.g. ?code=...) from browser history after sign-in
+  // so clicking Back doesn't land on a consumed Google OAuth URL → 400
+  useEffect(() => {
+    if (isSignedIn && window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [isSignedIn]);
+
   // Auto-save prefs 2 seconds after the user stops typing
   useEffect(() => {
     if (!isSignedIn || !user || !prefs.trim()) return;
