@@ -148,12 +148,7 @@ function cleanUrl(url) {
   return u;
 }
 
-function getUrlWarning(url, t) {
-  if (/instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/.test(url)) {
-    return lang => lang === "es" ? "⚠ Las redes sociales no permiten acceso directo. Sube una foto de la carta en su lugar." : "⚠ Social media doesn't allow direct access. Upload a photo of the menu instead.";
-  }
-  return null;
-}
+const SOCIAL_RE = /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com|linktr\.ee/;
 
 function AppInner({ lang, setLang, tool, setTool }) {
   const { isSignedIn, user } = useUser();
@@ -368,7 +363,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   const analyze = async () => {
     const validFiles = files.filter(f => f);
-    const validUrls = urls.map(u => cleanUrl(u)).filter(u => u.trim() && !/instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/.test(u));
+    const validUrls = urls.map(u => cleanUrl(u)).filter(u => u.trim() && !SOCIAL_RE.test(u));
     // If no valid files/urls but we have a restaurant name, try scraping by name
     const shouldScrapeByName = validFiles.length === 0 && validUrls.length === 0 && pendingRestaurant;
     if (validFiles.length === 0 && validUrls.length === 0 && !shouldScrapeByName) return;
@@ -422,7 +417,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
     }
 
     for (const url of validUrls) {
-      const isSocial = /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/.test(url);
+      const isSocial = SOCIAL_RE.test(url);
       if (isSocial) {
         newResults.push({ restaurante: "No disponible", platos: [], error: lang === "es" ? "Las redes sociales no permiten acceso directo. Sube una foto de la carta." : "Social media doesn't allow direct access. Upload a photo of the menu.", source: url });
         continue;

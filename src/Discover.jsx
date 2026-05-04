@@ -162,10 +162,13 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
     return name.includes(search.toLowerCase()) || addr.toLowerCase().includes(search.toLowerCase());
   });
 
+  const SOCIAL = /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com|linktr\.ee/;
+
   const handleAnalyze = (r) => {
     const name = r.displayName?.text || "restaurante";
     let url = (r.websiteUri || "").trim().split(/\s+/)[0].replace(/(%20)+$/i, "").trim();
     if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+    if (SOCIAL.test(url)) url = ""; // fall back to name+placeId scraping
     if (onAnalyze) onAnalyze({ name, url, placeId: r.id });
   };
 
