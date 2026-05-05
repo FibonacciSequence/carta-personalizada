@@ -16,7 +16,7 @@ async function logEvent(db, telegram, data) {
 
   try {
     if (telegram && telegram.token && telegram.chatId) {
-      const now = new Date().toISOString().replace("T", " ").slice(0, 16) + " UTC";
+      const now = new Date().toLocaleString("es-PE", { timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
       const lines = [
         "🍽 <b>Nueva analisis</b>",
         "Restaurante: " + (restaurantName || "desconocido"),
