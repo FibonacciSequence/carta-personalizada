@@ -341,7 +341,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
   const analyzeOne = async (messages, attempt = 1, restaurantUrl = "", restaurantName = "") => {
     const res = await fetch("/api/analyze", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-user-email": user?.primaryEmailAddress?.emailAddress || "" },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 2000, messages, restaurant_url: restaurantUrl, restaurant_name: restaurantName, restaurant_place_id: pendingPlaceId || "" }),
     });
     if (res.status === 429) { const d = await res.json(); throw new Error(d.error || "Rate limit"); }

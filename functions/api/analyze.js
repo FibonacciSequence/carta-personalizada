@@ -120,12 +120,14 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    console.log("[notify] token:", !!(context.env.TELEGRAM_BOT_TOKEN), "chatId:", !!(context.env.TELEGRAM_CHAT_ID), "restaurant:", restaurant_name);
-    await logEvent(
+    const isOwner = userEmail && context.env.OWNER_EMAIL && userEmail.toLowerCase() === context.env.OWNER_EMAIL.toLowerCase();
+    if (!isOwner) {
+      await logEvent(
       context.env.DB,
       { token: context.env.TELEGRAM_BOT_TOKEN, chatId: context.env.TELEGRAM_CHAT_ID },
-      { restaurantName: restaurant_name, restaurantUrl: restaurant_url, userEmail: userEmail, ip: ip, country: country }
-    );
+        { restaurantName: restaurant_name, restaurantUrl: restaurant_url, userEmail: userEmail, ip: ip, country: country }
+      );
+    }
 
     return new Response(JSON.stringify(data), {
       headers: { "Content-Type": "application/json" },
