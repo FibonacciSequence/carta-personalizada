@@ -8,5 +8,5 @@ database_name = "carta-personalizada-db"
 database_id = "8418a767-bd3a-44a1-b007-60af0bb6047b"
 
 [vars]
-OWNER_EMAIL = "tilmankneepkens@gmail.com"
+OWNER_EMAIL = "tilmankneepkens@gmail.com,tilmannathaniel@gmail.com"
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_YWNjZXB0ZWQtd2hpcHBldC00Ny5jbGVyay5hY2NvdW50cy5kZXYk"

@@ -120,7 +120,9 @@ export async function onRequestPost(context) {
 
     const data = await response.json();
 
-    const isOwner = userEmail && context.env.OWNER_EMAIL && userEmail.toLowerCase() === context.env.OWNER_EMAIL.toLowerCase();
+    const ownerEmails = (context.env.OWNER_EMAIL || "").split(",").map(e => e.trim().toLowerCase());
+    const isOwner = userEmail && ownerEmails.length > 0 && ownerEmails.includes(userEmail.toLowerCase());
+    console.log("[owner] userEmail:", userEmail, "isOwner:", isOwner);
     if (!isOwner) {
       await logEvent(
       context.env.DB,
