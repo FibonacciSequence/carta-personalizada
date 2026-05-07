@@ -56,7 +56,19 @@ export async function onRequestGet(context) {
             `SELECT place_id FROM confirmed_menus WHERE place_id IN (${placeholders})`
           ).bind(...ids).all();
           const confirmed = new Set(results.map(r => r.place_id));
-          data.places = places.map(p => ({ ...p, hasMenu: confirmed.has(p.id) }));
+
+          // Filter out places that have failed scraping 2+ times and never succeeded
+          let failed = new Set();
+          try {
+            const { results: failedRows } = await context.env.DB.prepare(
+              "SELECT place_id FROM failed_places WHERE fail_count >= 2 AND place_id NOT IN (SELECT place_id FROM confirmed_menus)"
+            ).all();
+            failed = new Set(failedRows.map(r => r.place_id));
+          } catch {}
+
+          data.places = places
+            .filter(p => !failed.has(p.id))
+            .map(p => ({ ...p, hasMenu: confirmed.has(p.id) }));
         }
       } catch {}
     }

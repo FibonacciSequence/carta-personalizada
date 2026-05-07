@@ -1,7 +1,14 @@
 const RATE_LIMIT = new Map();
 
 async function logEvent(db, telegram, data) {
-  const { restaurantName, restaurantUrl, userEmail, ip, country } = data;
+  const { restaurantName, restaurantUrl, userEmail, ip, country, placeId, scraped } = data;
+
+  // Track scraping failures per place so Discover can filter them out
+  if (!scraped && placeId && db) {
+    try {
+      await db.prepare("INSERT INTO failed_places (place_id, restaurant_name, fail_count) VALUES (?, ?, 1) ON CONFLICT(place_id) DO UPDATE SET fail_count = fail_count + 1, last_fail = datetime('now')").bind(placeId, restaurantName || "").run();
+    } catch(e) { console.error("[failed_places] error:", e.message); }
+  }
 
   try {
     if (db) {
@@ -70,6 +77,7 @@ export async function onRequestPost(context) {
     const userEmail = context.request.headers.get("x-user-email") || null;
 
     let finalMessages = messages;
+    let scrapeSuccess = false;
 
     if ((restaurant_url || restaurant_name) && messages && messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
@@ -95,6 +103,7 @@ export async function onRequestPost(context) {
             const source = scrapeData.source;
             const scrapedUrl = scrapeData.url;
             if (text && text.length > 200) {
+              scrapeSuccess = true;
               const prompt = typeof lastMsg.content === "string"
                 ? lastMsg.content
                 : (lastMsg.content.find(c => c.type === "text") || {}).text || "";
@@ -127,7 +136,7 @@ export async function onRequestPost(context) {
       await logEvent(
       context.env.DB,
       { token: context.env.TELEGRAM_BOT_TOKEN, chatId: context.env.TELEGRAM_CHAT_ID },
-        { restaurantName: restaurant_name, restaurantUrl: restaurant_url, userEmail: userEmail, ip: ip, country: country }
+        { restaurantName: restaurant_name, restaurantUrl: restaurant_url, userEmail: userEmail, ip: ip, country: country, placeId: restaurant_place_id || null, scraped: scrapeSuccess }
       );
     }
 
