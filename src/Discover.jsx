@@ -256,7 +256,13 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
   const textMuted = "#505050";
 
   const [mobileTab, setMobileTab] = useState("list"); // list | map
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" && window.innerWidth < 768);
+  React.useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", height: isMobile ? "auto" : "calc(100vh - 41px)", minHeight: "100vh", fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: bg, color: textPrimary }}>
@@ -264,10 +270,29 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
       {/* Left — restaurant list */}
       <div style={{ flex: isMobile ? "none" : "0 0 60%", overflowY: isMobile ? "visible" : "auto", padding: isMobile ? "1rem" : "1.5rem 1.5rem 1.5rem 2rem", minWidth: 0 }}>
         {isMobile && (
-          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginBottom: "1rem" }}>
-            <button onClick={() => setMobileTab("list")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "list" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "list" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "List" : "Lista"}</button>
-            <button onClick={() => { setMobileTab("map"); setTimeout(() => { if (googleMapRef.current) window.google.maps.event.trigger(googleMapRef.current, "resize"); else window.initMap && window.initMap(); }, 100); }} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "map" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "map" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "Map" : "Mapa"}</button>
-          </div>
+          <>
+            {/* Horizontal filter pills */}
+            <div style={{ overflowX: "auto", display: "flex", gap: 6, paddingBottom: 6, marginBottom: "0.5rem", WebkitOverflowScrolling: "touch" }}>
+              {FILTERS.map(f => (
+                <button key={f.id}
+                  onClick={() => { setActiveFilter(f.id); fetchPlaces(f.id); }}
+                  style={{ flexShrink: 0, padding: "5px 13px", border: `0.5px solid ${activeFilter === f.id ? "rgba(255,255,255,0.5)" : border}`, borderRadius: 16, fontSize: 12, color: activeFilter === f.id ? textPrimary : textSecondary, cursor: "pointer", background: activeFilter === f.id ? "rgba(255,255,255,0.15)" : "transparent", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            {/* Search */}
+            <input type="text"
+              placeholder={lang === "en" ? "Search restaurant..." : "Buscar restaurante..."}
+              value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width: "100%", padding: "9px 12px", border: `0.5px solid ${border}`, borderRadius: 10, fontSize: 13, color: textSecondary, background: "#111", fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: "0.5rem" }}
+            />
+            {/* Lista / Mapa tabs */}
+            <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginBottom: "0.75rem" }}>
+              <button onClick={() => setMobileTab("list")} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "list" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "list" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "List" : "Lista"}</button>
+              <button onClick={() => { setMobileTab("map"); setTimeout(() => { if (googleMapRef.current) window.google.maps.event.trigger(googleMapRef.current, "resize"); else window.initMap && window.initMap(); }, 150); }} style={{ flex: 1, padding: "6px", border: "none", borderRadius: 16, background: mobileTab === "map" ? "rgba(255,255,255,0.12)" : "transparent", color: mobileTab === "map" ? textPrimary : textSecondary, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{lang === "en" ? "Map" : "Mapa"}</button>
+            </div>
+          </>
         )}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "1.25rem" }}>
           <span style={{ fontFamily: "Georgia,serif", fontSize: 20, fontWeight: 500, color: textPrimary }}>
@@ -277,12 +302,12 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
         </div>
 
         {isMobile && mobileTab === "map" && (
-          <div id="gmap-container" style={{ height: "calc(100vh - 200px)", borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
+          <div id="gmap-container" style={{ height: "calc(100vh - 160px)", borderRadius: 10, overflow: "hidden", border: `0.5px solid ${border}` }} />
         )}
         {(!isMobile || mobileTab === "list") && loading && <div style={{ textAlign: "center", padding: "3rem", color: textMuted, fontSize: 13, fontStyle: "italic" }}>Buscando restaurantes…</div>}
         {error && <div style={{ padding: "11px 13px", background: "#2a0f0f", border: "0.5px solid #5a1f1f", borderRadius: 8, color: "#f08080", fontSize: 13 }}>{error}</div>}
 
-        {!loading && !error && (
+        {(!isMobile || mobileTab === "list") && !loading && !error && (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {filtered.map((r, i) => {
               const name = r.displayName?.text || "Restaurante";
@@ -348,8 +373,8 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
         )}
       </div>
 
-      {/* Right — filters panel */}
-      <div style={{ width: isMobile ? "100%" : "40%", minWidth: isMobile ? "auto" : 320, maxWidth: isMobile ? "none" : 480, flexShrink: 0, borderLeft: isMobile ? "none" : `0.5px solid ${border}`, borderTop: isMobile ? `0.5px solid ${border}` : "none", padding: isMobile ? "1rem" : "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
+      {/* Right — filters panel (desktop only) */}
+      <div style={{ width: isMobile ? "100%" : "40%", minWidth: isMobile ? "auto" : 320, maxWidth: isMobile ? "none" : 480, flexShrink: 0, borderLeft: isMobile ? "none" : `0.5px solid ${border}`, borderTop: "none", padding: "1.5rem", display: isMobile ? "none" : "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", background: bg }}>
         <div>
           <div style={{ fontFamily: "Georgia,serif", fontSize: 18, fontWeight: 500, fontStyle: "italic", color: textPrimary }}>La Carta Personalizada</div>
           <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: textMuted, marginTop: 2 }}>{lang === "en" ? "Your menu, your way" : "Tu menú a medida"}</div>
