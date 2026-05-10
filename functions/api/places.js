@@ -66,9 +66,19 @@ export async function onRequestGet(context) {
             failed = new Set(failedRows.map(r => r.place_id));
           } catch {}
 
-          data.places = places
+          const filtered = places
             .filter(p => !failed.has(p.id))
             .map(p => ({ ...p, hasMenu: confirmed.has(p.id) }));
+
+          // Deduplicate by websiteUri — keep the entry with most ratings
+          const byUrl = new Map();
+          for (const p of filtered) {
+            const key = (p.websiteUri || p.id).replace(/\/+$/, "").toLowerCase();
+            if (!byUrl.has(key) || (p.userRatingCount || 0) > (byUrl.get(key).userRatingCount || 0)) {
+              byUrl.set(key, p);
+            }
+          }
+          data.places = Array.from(byUrl.values());
         }
       } catch {}
     }
