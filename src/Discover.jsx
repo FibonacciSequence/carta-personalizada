@@ -256,8 +256,8 @@ export default function Discover({ onAnalyze, lang = "es", prefs = "", onPrefsCh
   const textMuted = "#505050";
 
   const [mobileTab, setMobileTab] = useState("list"); // list | map
-  const [isMobile, setIsMobile] = React.useState(typeof window !== "undefined" && window.innerWidth < 768);
-  React.useEffect(() => {
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
+  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
