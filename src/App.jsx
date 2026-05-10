@@ -565,7 +565,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
           <span className="disco-logo" style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 500, fontStyle: "italic", color: "#efefef", flexShrink: 0 }}>La Carta Personalizada</span>
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", flexShrink: 0 }}>
             <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("carta")}>La Carta</button>
-            <button style={{ background: "#111", color: "#ccc", border: "0.5px solid rgba(255,255,255,0.18)", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Lima Eats</button>
+            <button style={{ background: "#111", color: "#ccc", border: "0.5px solid rgba(255,255,255,0.18)", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Restaurantes</button>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", flexShrink: 0 }}>
             <button style={s.langBtn(lang === "es")} onClick={() => setLang("es")}>ES</button>
@@ -595,7 +595,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
         </div>
         <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 20, padding: "3px 4px", marginLeft: 8 }}>
           <button style={{ background: "transparent", color: "#888", border: "none", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>La Carta</button>
-          <button style={{ background: "#111", color: "#ccc", border: "0.5px solid rgba(255,255,255,0.18)", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("discover")}>Lima Eats</button>
+          <button style={{ background: "#111", color: "#ccc", border: "0.5px solid rgba(255,255,255,0.18)", borderRadius: 16, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }} onClick={() => setTool("discover")}>Restaurantes</button>
         </div>
         <div className="hdr-right" style={{ ...s.topRight, margin: 0 }}>
           <div style={s.langToggle}>
@@ -739,7 +739,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
                     {lang === "en" ? "↑ Upload menu photo or PDF" : "↑ Subir foto o PDF de la carta"}
                   </button>
                   <button style={{ ...s.restartBtn, marginTop: 0 }} onClick={() => { setTool("discover"); restart(); }}>
-                    {lang === "en" ? "← Back to Lima Eats" : "← Volver a Lima Eats"}
+                    {lang === "en" ? "← Back to Restaurantes" : "← Volver a Restaurantes"}
                   </button>
                 </div>
               ) : (
