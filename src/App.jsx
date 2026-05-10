@@ -558,7 +558,7 @@ function AppInner({ lang, setLang, tool, setTool }) {
 
   if (tool === "discover") {
     return (
-      <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: "100vh", overflow: "hidden", background: "#0e0e0e" }}>
+      <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", height: window.innerWidth < 768 ? "auto" : "100vh", overflow: window.innerWidth < 768 ? "auto" : "hidden", background: "#0e0e0e" }}>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <style>{`.disco-logo{display:block}@media(max-width:600px){.disco-logo{display:none}}`}</style>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 1rem", borderBottom: "0.5px solid rgba(255,255,255,0.08)", background: "#0e0e0e", flexWrap: "wrap" }}>
