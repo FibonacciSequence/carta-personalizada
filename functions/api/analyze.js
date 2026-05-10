@@ -6,7 +6,7 @@ async function logEvent(db, telegram, data) {
   // Track scraping failures per place so Discover can filter them out
   if (!scraped && placeId && db) {
     try {
-      await db.prepare("INSERT INTO failed_places (place_id, restaurant_name, fail_count) VALUES (?, ?, 1) ON CONFLICT(place_id) DO UPDATE SET fail_count = fail_count + 1, last_fail = datetime('now')").bind(placeId, restaurantName || "").run();
+      await db.prepare("INSERT INTO failed_places (place_id, restaurant_name, fail_count) VALUES (?, ?, 2) ON CONFLICT(place_id) DO UPDATE SET fail_count = 2, last_fail = datetime('now')").bind(placeId, restaurantName || "").run();
     } catch(e) { console.error("[failed_places] error:", e.message); }
   }
 
